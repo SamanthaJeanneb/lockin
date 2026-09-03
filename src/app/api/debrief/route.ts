@@ -5,9 +5,11 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { requireUser, getUser } from '@/lib/auth';
 import { handleError, ok, parseBody, rateLimit, tooMany } from '@/lib/api';
 import { matchDebrief, extractQuantity, extractAmount } from '@/lib/ai/match';
-import { askJson } from '@/lib/ai/client';
+import { askJsonSafe } from '@/lib/ai/client';
 import { DEBRIEF_SYSTEM } from '@/lib/ai/prompts';
+import { DEBRIEF_SCHEMA } from '@/lib/ai/schemas';
 import { promptContext } from '@/lib/ai/context';
+import { mentionsPrompt, resolveMentions } from '@/lib/ai/mentions';
 import { features } from '@/lib/env';
 import { whyChain } from '@/lib/db/graph';
 
@@ -45,15 +47,21 @@ export async function POST(req: Request) {
       completions: [], not_done: [], objects: [], edges: [], expenses: [], journal: null, questions: [],
     };
 
+    // The same rule as capture: an @mention names a record that already exists,
+    // so it is resolved here rather than left for the model to propose again.
+    const { mentions, unresolved } = await resolveMentions(user.id, text);
+    const mentionBlock = mentionsPrompt(mentions, unresolved);
+
     if (features.ai) {
       const ctx = await promptContext(user.id, {
         identity: user.identityStatement,
         timezone: user.timezone,
       });
-      model = await askJson<ModelResult>({
-        system: DEBRIEF_SYSTEM(ctx),
+      model = await askJsonSafe<ModelResult>({
+        system: DEBRIEF_SYSTEM(ctx) + (mentionBlock ? `\n\n${mentionBlock}` : ''),
         user: text,
-        maxTokens: 2000,
+        maxTokens: 4000,
+        schema: DEBRIEF_SCHEMA as unknown as Record<string, unknown>,
         fallback: model,
       });
     }
@@ -126,7 +134,12 @@ export async function POST(req: Request) {
       captureId: row!.id,
       matches,
       notDone: notDone.filter((n) => n.title),
-      newObjects: model.objects.filter((o) => o.confidence >= 0.5),
+      newObjects: model.objects
+        .filter((o) => o.confidence >= 0.5)
+        // Never offer to create someone the user pointed at by name.
+        .filter(
+          (o) => !mentions.some((m) => m.title.toLowerCase().includes(o.title.toLowerCase())),
+        ),
       expenses,
       journal: model.journal ?? { body: text, mood: null, themes: [] },
     });

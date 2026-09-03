@@ -2,7 +2,7 @@ import { and, desc, eq, gte, isNull, sql } from 'drizzle-orm';
 import { subDays } from 'date-fns';
 import { db } from '@/lib/db/client';
 import { appUser, modelFact, object } from '@/lib/db/schema';
-import { askJson } from '@/lib/ai/client';
+import { askJsonSafe } from '@/lib/ai/client';
 import { PATTERN_SYSTEM } from '@/lib/ai/prompts';
 import { promptContext } from '@/lib/ai/context';
 import { features } from '@/lib/env';
@@ -39,7 +39,7 @@ export async function detectPatternsJob({ userId }: { userId?: string } = {}) {
     if (entries.length < 3 || !features.ai) continue;
 
     const ctx = await promptContext(u.id, { withOpenItems: false });
-    const result = await askJson<PatternResult>({
+    const result = await askJsonSafe<PatternResult>({
       system: PATTERN_SYSTEM(ctx),
       user: entries
         .map((e) => `[${e.id}] ${e.createdAt.toISOString().slice(0, 10)}\n${e.body ?? e.title}`)

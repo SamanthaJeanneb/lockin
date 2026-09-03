@@ -6,6 +6,7 @@ import { requireUser } from '@/lib/auth';
 import { fail, handleError, ok, parseBody, rateLimit, tooMany } from '@/lib/api';
 import { askJson } from '@/lib/ai/client';
 import { BREAKDOWN_SYSTEM } from '@/lib/ai/prompts';
+import { BREAKDOWN_SCHEMA } from '@/lib/ai/schemas';
 import { promptContext } from '@/lib/ai/context';
 import { rollupProgress } from '@/lib/db/rollup';
 import { storeObjectEmbedding } from '@/lib/ai/embeddings';
@@ -54,7 +55,8 @@ Area: ${project.area ?? 'unspecified'}
 Starts: ${(project.startAt ?? project.createdAt).toISOString().slice(0, 10)}
 Due: ${project.dueAt?.toISOString().slice(0, 10) ?? 'unspecified'}
 ${done.length ? `Already completed, keep these exactly: ${done.map((d) => d.title).join('; ')}` : ''}`,
-      maxTokens: 2500,
+      maxTokens: 6000,
+      schema: BREAKDOWN_SCHEMA as unknown as Record<string, unknown>,
       fallback: { milestones: [] },
     });
 

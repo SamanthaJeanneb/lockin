@@ -7,7 +7,7 @@ import { requireUser } from '@/lib/auth';
 import { handleError, ok, parseBody } from '@/lib/api';
 import { rollupProgress } from '@/lib/db/rollup';
 import { latestAreaProgress, logActivity } from '@/lib/db/queries';
-import { resolveDate } from '@/lib/ai/extract';
+import { fromPropertyBag, resolveDate } from '@/lib/ai/extract';
 import { storeObjectEmbedding } from '@/lib/ai/embeddings';
 import { whyChain } from '@/lib/db/graph';
 
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
             userId: user.id,
             type: p.type,
             title: p.title,
-            props: p.props ?? {},
+            props: fromPropertyBag(p.props),
             sourceCaptureId: b.captureId,
             inferredFields: [],
           })

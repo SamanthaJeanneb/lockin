@@ -20,7 +20,25 @@ function vocabulary(ctx: PromptContext) {
   return `TYPES (use only these keys):\n${types}\n\nLIFE AREAS: ${areas}\n\nRELATIONS: ${RELATIONS.join(' | ')}`;
 }
 
+export const PRODUCT_CONTEXT = `LockIn is a personal operating system. Everything in it is an "object" with a
+type, connected to other objects by typed edges. The point of the product is to
+show whether someone's days are moving their years, so an object that is not
+connected to anything is nearly worthless — a task with no goal, a person with
+no interaction, a book with no source.
+
+The surfaces these objects appear on:
+  Home      today's ranked list, and goal progress by horizon
+  Goals     a tree from 10-year down to 1-week, with rolled-up progress
+  Work      a board, projects, milestones, a backlog, things you are waiting on
+  Brain     journal, notes, thoughts, drafts, ideas, decisions, quotes, saves
+  People    everyone you know, with a learned contact cadence
+  Library   books, articles, media, places, interests, skills
+  Life      a chronological timeline of everything that happened
+  Money     accounts, spending, financial goals`;
+
 export const EXTRACTION_SYSTEM = (ctx: PromptContext) => `You turn one piece of raw human input into structured, connected objects for a personal operating system.
+
+${PRODUCT_CONTEXT}
 
 Today is ${ctx.today} (${ctx.timezone}).
 ${ctx.identity ? `The person describes themselves as: "${ctx.identity}"` : ''}
@@ -44,31 +62,55 @@ ${ctx.people.map((p) => `  ${p.id} ${p.title}${p.company ? ` · ${p.company}` : 
 RULES
 - Never invent a fact that is not in the text. If a field is not stated, omit it.
 - Confidence below 0.5 means omit the item, or put the ambiguity in "questions".
-- One sentence routinely yields several objects. "Met Alex at lunch, he's at
-  OpenAI, said he'd intro me to their design lead, follow up Tuesday" is a
-  person, an interaction, a waiting_on, and a task — four objects and three edges.
-- ALWAYS propose edges. An unconnected object is nearly worthless.
+- One sentence routinely yields several objects. ALWAYS propose edges — an
+  unconnected object is nearly worthless.
 - Use only the type, status, area and relation vocabularies above.
-- Dates resolve against today. "Tuesday" means the next Tuesday. Return ISO 8601.
-- If the text describes completing something on their open list, put it in
+- Dates resolve against today. "Tuesday" means the next Tuesday. ISO 8601.
+- If the text says they completed something on their open list, that goes in
   "completions", not "objects".
-- If the text mentions money spent, add an "expenses" row.
-- If the text is reflective or diaristic, fill "journal" with the text verbatim,
-  a mood, and up to four themes. Never rewrite their words.
+- Money spent becomes an "expenses" row.
+- Reflective or diaristic text fills "journal" with their words verbatim, a
+  mood, and up to four themes. Never rewrite what they wrote.
 
-Return ONE JSON object, no prose, no markdown fence:
-{
-  "objects": [{"tmp":"o1","type":"person","title":"Alex","props":{"company":"OpenAI","interests":["robotics"]},"area":"career","status":null,"due_at":null,"estimate_minutes":null,"confidence":0.94,"match":{"object_id":null,"candidates":[]}}],
-  "edges": [{"from":"o1","to":"o2","rel":"with","confidence":0.9}],
-  "updates": [{"object_id":"<uuid>","set":{"props.company":"Anthropic"},"confidence":0.88}],
-  "completions": [{"object_id":"<uuid>","confidence":0.98,"evidence":"finished the homepage"}],
-  "not_done": [{"object_id":"<uuid>","snooze_to":"tomorrow"}],
-  "expenses": [{"amount":60,"merchant":"dinner","category":"restaurants"}],
-  "journal": {"body":"…","mood":"good","themes":["startup","job search"]},
-  "questions": []
-}
+WHAT DIFFERENT SENTENCES SHOULD PRODUCE
 
-"from" and "to" in edges may be either a tmp id from this payload or an existing uuid.`;
+Meeting or talking to someone
+  "Met Alex at lunch, he's at OpenAI, said he'd intro me to their design lead"
+  → person Alex {company: OpenAI} (reuse the id if you were given one)
+  → interaction "Lunch with Alex", edge with → Alex
+  → waiting_on "Intro to the OpenAI design lead", edge with → Alex
+  An interaction ALWAYS gets a 'with' edge to the person. A person alone,
+  unconnected, is a failure.
+
+Starting to learn or practise something
+  "started learning piano" / "picked up bouldering" / "learning Spanish"
+  → skill, status "learning", the area it belongs to
+  → AND a habit to actually track it — title it as the recurring action
+    ("Practise piano"), status "active", with a sensible weekly target in
+    props: {target: 3, unit: "sessions", cadence: "weekly"}
+  → edge part_of from the habit to the skill
+  A skill on its own records an intention. The habit is what makes it
+  measurable, so create both. Do the same for anything they say they have
+  started, taken up, or want to get better at.
+
+Naming a book, article, podcast, course or place
+  "reading The Mom Test" → book, status "reading"
+  "someone recommended Shape Up" → book, status "want", plus a
+    recommended_by edge to the person if one is named
+  Titles go to the library with the right type and status. Do not turn a book
+  into a task.
+
+An idea, a decision, or something unresolved
+  → idea (status "raw"), decision (with reasoning and alternatives in props),
+    or question (status "open")
+
+Something they need to do
+  → task, with a due date if stated and an estimate if inferable
+
+Anything they might do later, with no commitment
+  → backlog_item, status "someday"
+
+Return the JSON object described by the schema.`;
 
 export const DEBRIEF_SYSTEM = (ctx: PromptContext) => `You read one paragraph describing someone's day and decide what on their list it refers to.
 

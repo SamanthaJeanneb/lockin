@@ -4,7 +4,7 @@ import {
 } from 'date-fns';
 import { db } from '@/lib/db/client';
 import { activity, appUser, object, review, transaction } from '@/lib/db/schema';
-import { askJson } from '@/lib/ai/client';
+import { askJsonSafe } from '@/lib/ai/client';
 import { OBSERVATION_SYSTEM } from '@/lib/ai/prompts';
 import { promptContext } from '@/lib/ai/context';
 import { latestAreaProgress } from '@/lib/db/queries';
@@ -169,7 +169,7 @@ export async function buildReviewData(
 
   if (features.ai && completed.length) {
     const ctx = await promptContext(userId, { withOpenItems: false });
-    const obs = await askJson<{ observations: { title: string; body: string; url?: string }[] }>({
+    const obs = await askJsonSafe<{ observations: { title: string; body: string; url?: string }[] }>({
       system: OBSERVATION_SYSTEM(ctx),
       user: JSON.stringify({
         counts: data.counts,

@@ -47,6 +47,9 @@ export const env = {
   // Jobs
   inngestEventKey: opt('INNGEST_EVENT_KEY'),
   inngestSigningKey: opt('INNGEST_SIGNING_KEY'),
+  /** Set when running `npm run inngest` — the local dev server can reach
+   *  localhost, where Inngest Cloud cannot. */
+  inngestDev: opt('INNGEST_DEV') === 'true',
   cronSecret: opt('CRON_SECRET'),
 
   // Crypto
@@ -90,6 +93,19 @@ export const features = {
   },
   get jobs() {
     return Boolean(env.inngestEventKey);
+  },
+  /**
+   * Whether Inngest can actually run our functions.
+   *
+   * Inngest is a callback service: it receives an event, then calls back into
+   * `/api/inngest` to execute. It cannot reach `http://localhost:3000`, so a
+   * configured key on a local URL means events queue in the cloud and nothing
+   * ever runs. Having the key is not the same as being able to use it.
+   */
+  get jobsReachable() {
+    if (!env.inngestEventKey) return false;
+    if (env.inngestDev) return true;
+    return !/localhost|127\.0\.0\.1|0\.0\.0\.0|\.local(:|$)/.test(env.appUrl);
   },
 };
 

@@ -46,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Outfit:wght@400;500&family=Geist+Mono:wght@400&display=swap"
         />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js" async />
       </head>
       <body>
         <Providers>{children}</Providers>

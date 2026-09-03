@@ -4,10 +4,12 @@ import { db } from '@/lib/db/client';
 import { capture, edge, object, type Extraction, type ExtractionObject } from '@/lib/db/schema';
 import { askJson } from './client';
 import { EXTRACTION_SYSTEM } from './prompts';
+import { EXTRACTION_SCHEMA } from './schemas';
 import { promptContext } from './context';
 import { storeObjectEmbedding } from './embeddings';
 import { getUserForJob } from '@/lib/db/queries';
 import { duplicateCandidates } from './match';
+import { mentionsPrompt, resolveMentions } from './mentions';
 
 const EMPTY: Extraction = {
   objects: [],
@@ -42,21 +44,35 @@ export async function extractCapture(captureId: string): Promise<Extraction> {
     withPeople: true,
   });
 
+  // @mentions are resolved before the model sees the text, so a deliberate
+  // reference to an existing record is a fact in the prompt rather than
+  // something the model has to spot.
+  const { mentions, unresolved } = await resolveMentions(row.userId, text);
+  const mentionBlock = mentionsPrompt(mentions, unresolved);
+
   let result: Extraction;
   try {
     result = normalise(
       await askJson<Extraction>({
-        system: EXTRACTION_SYSTEM(ctx),
+        system: EXTRACTION_SYSTEM(ctx) + (mentionBlock ? `\n\n${mentionBlock}` : ''),
         user: text,
-        maxTokens: 3000,
+        maxTokens: 8000,
+        schema: EXTRACTION_SCHEMA as unknown as Record<string, unknown>,
         fallback: EMPTY,
       }),
     );
   } catch (e) {
-    // Store the raw text and retry later. Nothing the user typed is ever lost.
+    // The raw text is already saved, so nothing is lost. Mark it processed with
+    // the reason attached: a failed call and an empty result are different
+    // problems and must not look the same to the user.
     await db
       .update(capture)
-      .set({ error: e instanceof Error ? e.message : 'extraction failed', attempts: row.attempts + 1 })
+      .set({
+        error: e instanceof Error ? e.message : 'extraction failed',
+        attempts: row.attempts + 1,
+        processedAt: new Date(),
+        extraction: EMPTY,
+      })
       .where(eq(capture.id, captureId));
     throw e;
   }
@@ -72,6 +88,32 @@ export async function extractCapture(captureId: string): Promise<Extraction> {
     }
   }
 
+  // Enforce the mention links rather than trusting them: if the model created
+  // an object for something the user @-mentioned, point the edge at the record
+  // they meant.
+  if (mentions.length) {
+    const known = new Set(mentions.map((m) => m.id));
+    for (const m of mentions) {
+      const referenced = result.edges.some((e) => e.to === m.id || e.from === m.id);
+      if (referenced) continue;
+      const subject = result.objects.find((o) =>
+        ['interaction', 'task', 'note', 'journal', 'waiting_on', 'experience'].includes(o.type),
+      );
+      if (subject) {
+        result.edges.push({
+          from: subject.tmp,
+          to: m.id,
+          rel: m.type === 'person' || m.type === 'group' ? 'with' : 'about',
+          confidence: 0.95,
+        });
+      }
+    }
+    // Never propose creating something the user pointed at by name.
+    result.objects = result.objects.filter(
+      (o) => !mentions.some((m) => known.has(m.id) && m.title.toLowerCase() === o.title.toLowerCase()),
+    );
+  }
+
   await db
     .update(capture)
     .set({ extraction: result, processedAt: new Date(), error: null })
@@ -80,11 +122,46 @@ export async function extractCapture(captureId: string): Promise<Extraction> {
   return result;
 }
 
+/** Fold the key/value pairs a strict schema forces back into a plain object. */
+export function fromPropertyBag(
+  bag: unknown,
+): Record<string, unknown> {
+  if (Array.isArray(bag)) {
+    const out: Record<string, unknown> = {};
+    for (const entry of bag) {
+      if (entry && typeof entry === 'object' && 'key' in entry && 'value' in entry) {
+        const { key, value } = entry as { key: string; value: string };
+        if (!key) continue;
+        // A comma-separated value is almost always a list the model flattened.
+        // Values arrive as strings because the schema demands it. Restore the
+        // obvious types so a habit target is a number and a list is a list.
+        if (/,\s/.test(value)) out[key] = value.split(/,\s*/).filter(Boolean);
+        else if (/^-?\d+(\.\d+)?$/.test(value.trim())) out[key] = Number(value);
+        else if (/^(true|false)$/i.test(value.trim())) out[key] = value.trim().toLowerCase() === 'true';
+        else out[key] = value;
+      }
+    }
+    return out;
+  }
+  return bag && typeof bag === 'object' ? (bag as Record<string, unknown>) : {};
+}
+
+function emptyToNull(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = v.trim().toLowerCase();
+  return t === '' || t === 'none' || t === 'null' || t === 'n/a' || t === 'unspecified' ? null : v;
+}
+
 function normalise(raw: Extraction): Extraction {
   const out: Extraction = { ...EMPTY, ...raw };
   out.objects = (raw.objects ?? []).filter((o) => o?.title && o?.type).map((o, i) => ({
     ...o,
     tmp: o.tmp || `o${i + 1}`,
+    props: fromPropertyBag(o.props),
+    // Models write "none"/"null"/"n/a" where the schema wanted null, and those
+    // strings would otherwise become real statuses and break every filter.
+    status: emptyToNull(o.status),
+    area: emptyToNull(o.area),
     confidence: typeof o.confidence === 'number' ? o.confidence : 0.7,
     due_at: o.due_at ? resolveDate(o.due_at) : null,
   }));
@@ -92,7 +169,9 @@ function normalise(raw: Extraction): Extraction {
   out.completions = (raw.completions ?? []).filter((c) => c?.object_id);
   out.not_done = (raw.not_done ?? []).filter((n) => n?.object_id);
   out.expenses = (raw.expenses ?? []).filter((e) => typeof e?.amount === 'number');
-  out.updates = (raw.updates ?? []).filter((u) => u?.object_id);
+  out.updates = (raw.updates ?? [])
+    .filter((u) => u?.object_id)
+    .map((u) => ({ ...u, set: fromPropertyBag(u.set) }));
   out.questions = raw.questions ?? [];
   return out;
 }

@@ -31,7 +31,8 @@
       "zustand": ["./node_modules/zustand/esm/index.d.mts"],
       "zustand/vanilla": ["./node_modules/zustand/esm/vanilla.d.mts"],
       "zustand/react": ["./node_modules/zustand/esm/react.d.mts"],
-      "zustand/*": ["./node_modules/zustand/esm/*"]
+      "zustand/*": ["./node_modules/zustand/esm/*"],
+      "@anthropic-ai/sdk/helpers/*": ["./node_modules/@anthropic-ai/sdk/helpers/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

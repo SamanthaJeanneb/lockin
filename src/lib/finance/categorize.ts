@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
 import { transaction } from '@/lib/db/schema';
-import { askJson } from '@/lib/ai/client';
+import { askJsonSafe } from '@/lib/ai/client';
 import { SPEND_CATEGORIES } from '@/lib/constants';
 import { features } from '@/lib/env';
 
@@ -62,7 +62,7 @@ export async function categorizeTransactions(
 
   if (!unresolved.length || !features.ai) return;
 
-  const result = await askJson<{ assignments: { id: string; category: string }[] }>({
+  const result = await askJsonSafe<{ assignments: { id: string; category: string }[] }>({
     system: `Assign one category to each transaction. Categories: ${SPEND_CATEGORIES.join(', ')}.
 Use "other" when nothing fits. Return {"assignments":[{"id":"…","category":"…"}]} and nothing else.`,
     user: unresolved.map((r) => `${r.id} | ${r.merchant ?? ''} | ${r.description ?? ''}`).join('\n'),

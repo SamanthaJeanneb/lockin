@@ -7,7 +7,7 @@ export function anthropic(): Anthropic {
   if (!features.ai) {
     throw new Error('ANTHROPIC_API_KEY is not configured — AI features are off. See SETUP.md.');
   }
-  client ??= new Anthropic({ apiKey: env.anthropicKey!, maxRetries: 2, timeout: 60_000 });
+  client ??= new Anthropic({ apiKey: env.anthropicKey!, maxRetries: 2, timeout: 120_000 });
   return client;
 }
 
@@ -16,9 +16,22 @@ export interface AskOptions {
   user: string;
   maxTokens?: number;
   temperature?: number;
-  /** Seeds the assistant turn so the model continues valid JSON instead of prose. */
-  prefill?: string;
   model?: string;
+}
+
+/**
+ * The Claude 5 family rejects `temperature` outright — a 400 reading
+ * "`temperature` is deprecated for this model". Sending it unconditionally made
+ * every call fail, and because the failure was swallowed it looked exactly like
+ * "the model found nothing".
+ */
+function supportsTemperature(model: string): boolean {
+  return !/claude-(opus|sonnet|haiku|fable|mythos)-5/i.test(model);
+}
+
+function isParamError(e: unknown, param: string): boolean {
+  const message = e instanceof Error ? e.message : String(e);
+  return new RegExp(param, 'i').test(message) && /deprecat|not support|unsupported/i.test(message);
 }
 
 async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
@@ -37,34 +50,90 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
 }
 
 export async function askText(opts: AskOptions): Promise<string> {
-  const res = await withRetry(() =>
-    anthropic().messages.create({
-      model: opts.model ?? env.anthropicModel,
-      max_tokens: opts.maxTokens ?? 2048,
-      temperature: opts.temperature ?? 0.3,
-      system: opts.system,
-      messages: [
-        { role: 'user', content: opts.user },
-        ...(opts.prefill ? [{ role: 'assistant' as const, content: opts.prefill }] : []),
-      ],
-    }),
-  );
-  const text = res.content
+  const model = opts.model ?? env.anthropicModel;
+
+  const build = (withTemperature: boolean) => ({
+    model,
+    max_tokens: opts.maxTokens ?? 4096,
+    ...(withTemperature && opts.temperature !== undefined
+      ? { temperature: opts.temperature }
+      : {}),
+    system: opts.system,
+    messages: [{ role: 'user' as const, content: opts.user }],
+  });
+
+  const res = await withRetry(async () => {
+    try {
+      return await anthropic().messages.create(build(supportsTemperature(model)));
+    } catch (e) {
+      // Belt and braces: if a model rejects temperature and the name check
+      // missed it, drop the parameter and try once rather than failing.
+      if (isParamError(e, 'temperature')) return anthropic().messages.create(build(false));
+      throw e;
+    }
+  });
+
+  return res.content
     .filter((b): b is Anthropic.TextBlock => b.type === 'text')
     .map((b) => b.text)
     .join('');
-  return opts.prefill ? opts.prefill + text : text;
 }
 
 /**
- * Structured output. The model is prefilled with `{` and the response is
- * repaired before parsing, because a truncated or fenced reply is the single
- * most common failure and it should never surface to the user.
+ * Structured output.
+ *
+ * When a JSON schema is supplied the API is constrained to it, so the response
+ * is valid by construction. This replaced an assistant-prefill trick that the
+ * Claude 5 family rejects outright ("This model does not support assistant
+ * message prefill"), and which only ever coaxed JSON rather than guaranteeing it.
+ *
+ * Without a schema it falls back to asking plainly and repairing the reply,
+ * which still handles a fenced or chatty response.
+ *
+ * A malformed reply degrades to `fallback`. A failed *call* throws, so callers
+ * can record why — an empty result and a 400 are different problems and must
+ * not look the same.
  */
-export async function askJson<T>(opts: AskOptions & { fallback: T }): Promise<T> {
+export async function askJson<T>(
+  opts: AskOptions & { fallback: T; schema?: Record<string, unknown> },
+): Promise<T> {
+  const model = opts.model ?? env.anthropicModel;
+
+  if (opts.schema) {
+    // The format object is built here rather than with the SDK's
+    // `jsonSchemaOutputFormat` helper: that helper rewrites the schema before
+    // sending it, and its subpath import is one of the packages this project's
+    // directory name breaks (see tsconfig `paths`). A literal format is both
+    // simpler and exactly what the API documents.
+    const res = await withRetry(() =>
+      anthropic().messages.create({
+        model,
+        max_tokens: opts.maxTokens ?? 4096,
+        system: opts.system,
+        messages: [{ role: 'user', content: opts.user }],
+        output_config: { format: { type: 'json_schema', schema: opts.schema! } },
+      }),
+    );
+    const text = res.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+    return parseJson<T>(text, opts.fallback);
+  }
+
+  const raw = await askText({
+    ...opts,
+    system: `${opts.system}\n\nReturn only the JSON object. No prose, no markdown fence.`,
+  });
+  return parseJson<T>(raw, opts.fallback);
+}
+
+/** For callers that would rather degrade than fail. */
+export async function askJsonSafe<T>(
+  opts: AskOptions & { fallback: T; schema?: Record<string, unknown> },
+): Promise<T> {
   try {
-    const raw = await askText({ ...opts, prefill: opts.prefill ?? '{', temperature: opts.temperature ?? 0 });
-    return parseJson<T>(raw, opts.fallback);
+    return await askJson(opts);
   } catch (e) {
     console.error('[ai] structured call failed', e);
     return opts.fallback;

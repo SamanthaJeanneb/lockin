@@ -555,6 +555,22 @@ You are using the direct connection string, not the transaction pooler. Switch
 No session and no `LOCKIN_DEV_USER`. Either sign in at `/login`, or add the dev
 user line back for local work.
 
+**Captures save but never process (`processed_at` stays null, `attempts` 0)**
+An Inngest key is set but Inngest cannot reach you. Inngest is a callback
+service: it takes the event, then calls back into `/api/inngest` to run the
+function — and it cannot reach `http://localhost:3000`. LockIn now detects this
+(`features.jobsReachable`) and runs the job in-process instead. If you want to
+use Inngest locally, run `npm run inngest` and set `INNGEST_DEV=true`.
+
+**Extraction fails with a 400 about `temperature` or assistant prefill**
+Both are Claude 5 family constraints: `temperature` is rejected outright, and
+assistant-message prefill is no longer supported. LockIn omits temperature on
+those models and uses structured outputs (`output_config.format`) instead of
+prefill, so this should not recur — but if you point `ANTHROPIC_MODEL` at
+something unusual and see it, that is the cause. The failure is recorded on the
+capture row and shown in the capture modal rather than silently returning an
+empty result.
+
 **Extraction never returns**
 Check the terminal. `ANTHROPIC_API_KEY is not configured` means the key is
 missing; a 402 means the Anthropic account has no credit. Either way the raw
