@@ -146,3 +146,14 @@ did, which meant `npm run typecheck` and `next build`.
 consulted before the exports map, so the wildcard is never evaluated. It is
 scoped to the one package that needs it and carries a comment explaining when
 to delete it. If the repo ever moves to a path without a `*`, the block can go.
+
+Vitest is the one thing that stays broken. Vite treats its own config path as a
+glob and fails to load `vitest.config.ts` — it prints the reason plainly — and
+because it resolves through symlinks back to the real path, a symlinked working
+directory does not rescue it. There is no in-repo escape hatch equivalent to
+`paths`.
+
+Everything else is unaffected: dev, build, typecheck, the design check, and
+Playwright all load fine. Running the unit suite means copying the project to a
+path without a `*`, which `SETUP.md` documents. That is the standing cost of
+keeping the folder name.

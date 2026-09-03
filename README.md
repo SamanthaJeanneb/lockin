@@ -174,6 +174,7 @@ npm run db:seed          # realistic demo data
 npm run db:reset         # down, up, migrate, seed
 
 npm test                 # Vitest — rollup maths, matching, projections, components
+                         # (needs a project path without a "*" — see SETUP.md)
 npm run e2e              # Playwright at 1440 / 1200 / 834 / 375
 npm run design:check     # the design system's hard rules
 npm run inngest          # local Inngest dev server (optional)

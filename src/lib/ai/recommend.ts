@@ -36,6 +36,11 @@ export async function rankToday(
         isNull(object.completedAt),
         isNull(object.archivedAt),
         sql`${object.type} in ('task','habit','milestone','waiting_on')`,
+        // A milestone is a checkpoint, not an action. It only belongs on Today
+        // when it is close enough that it is actually the thing to work on.
+        sql`(${object.type} <> 'milestone'
+             or (${object.dueAt} is not null
+                 and ${object.dueAt} < now() + interval '14 days'))`,
         or(isNull(object.snoozeUntil), sql`${object.snoozeUntil} <= now()`)!,
         sql`(${object.status} is null or ${object.status} not in ('done','dropped','received'))`,
       ),
@@ -106,6 +111,10 @@ export async function rankToday(
     const blockedList = blocked.get(o.id) ?? [];
     factors.blocked = blockedList.length ? -0.8 : 0;
 
+    // At equal deadline pressure a task beats the milestone that contains it,
+    // because one is doable in an afternoon and the other is not.
+    factors.actionable = o.type === 'milestone' ? -0.35 : 0;
+
     const score =
       factors.deadline * 2.2 +
       factors.unblock * 1.6 +
@@ -116,7 +125,8 @@ export async function rankToday(
       factors.energy * 0.5 +
       factors.avoidance * 0.7 +
       factors.relationship * 0.5 +
-      factors.blocked;
+      factors.blocked +
+      factors.actionable;
 
     return { o, score, factors, unblocks: n, blockedBy: blockedList };
   });
@@ -167,6 +177,13 @@ function whyLine(
   chain: { title: string; type: string }[],
 ): string {
   if (t.blockedBy.length) return `Blocked by ${t.blockedBy[0]!.title}.`;
+
+  // A waiting_on is defined by how long it has been waiting, so lead with that
+  // rather than whichever generic factor happened to score highest.
+  if (t.o.type === 'waiting_on') {
+    const days = Math.max(0, differenceInCalendarDays(new Date(), t.o.createdAt));
+    return days === 0 ? 'Waiting since today.' : `Waiting ${days} day${days === 1 ? '' : 's'}.`;
+  }
   const top = Object.entries(t.factors)
     .filter(([k]) => k !== 'blocked')
     .sort((a, b) => b[1] - a[1])[0];

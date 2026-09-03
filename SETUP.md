@@ -589,6 +589,22 @@ Only `zustand` needs it today. If another package starts failing the same way,
 add it to that block in the same shape. Moving the repo to a path without a `*`
 removes the need for the block entirely.
 
+**`npm test` fails with `Must use "outdir" when there are multiple input files`**
+Vite treats its own config path as a glob, and this directory's name contains a
+`*`. It says so in the error: *"The config path contains the '*' character."*
+Unlike the TypeScript issue there is no `paths`-style escape — Vite resolves
+through symlinks back to the real path, so a symlinked working directory does
+not help either.
+
+`npm run dev`, `npm run build`, `npm run typecheck`, `npm run design:check` and
+`npm run e2e` are all unaffected; Playwright loads its config fine. Only Vitest
+is blocked. To run the unit tests, copy or move the project to a path without a
+`*`:
+
+```bash
+cp -R "Get your sh*t together" ~/lockin && cd ~/lockin && npm test
+```
+
 **`npm run e2e` times out on first run**
 The dev server compiles routes on demand. Run it once (`npm run dev`, click
 around) or run the suite against a production build:
