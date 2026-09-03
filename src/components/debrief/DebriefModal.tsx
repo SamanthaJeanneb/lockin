@@ -5,6 +5,7 @@ import { useApp } from '@/lib/store';
 import { api, type DebriefResult, type SerializedObject } from '@/lib/client-api';
 import { debounce } from '@/lib/utils';
 import { Button, Checkbox, Dialog, Icon, Meta, SectionHeader, Skeleton, Textarea } from '@/components/ui';
+import { MentionTextarea } from '@/components/capture/MentionTextarea';
 import { VoiceRecorder } from '@/components/capture/VoiceRecorder';
 import { iconFor } from '@/components/composite/ObjectDetail';
 
@@ -157,13 +158,12 @@ export function DebriefModal() {
         >
           {/* Left: you write */}
           <div className="flex flex-col border-hairline px-xl py-lg tablet:border-r">
-            <Textarea
+            <MentionTextarea
               autoFocus
-              autoGrow
               rows={8}
               value={text}
-              placeholder="Finished the homepage and pushed it live. Ran 4 miles. Had lunch with Alex from OpenAI…"
-              onChange={(e) => setText(e.target.value)}
+              placeholder="Finished the homepage and pushed it live. Ran 4 miles. Had lunch with @Alex…"
+              onChange={setText}
               className="min-h-[160px] border-0 p-0 focus:border-0"
             />
             <div className="mt-sm flex justify-end">

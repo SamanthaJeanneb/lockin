@@ -40,6 +40,10 @@ export function Dialog({
       <RD.Portal>
         <RD.Overlay className="anim-overlay fixed inset-0 z-40 bg-scrim" />
         <RD.Content
+          // With no description, opt out of aria-describedby rather than
+          // pointing it at a copy of the title — a screen reader would
+          // otherwise announce the same words twice.
+          {...(description ? {} : { 'aria-describedby': undefined })}
           className={cn(
             'anim-modal fixed z-50 flex flex-col overflow-hidden bg-canvas text-ink',
             'border border-hairline shadow-modal',

@@ -11,6 +11,8 @@ export interface ExtractionReviewProps {
   captureId: string;
   extraction: Extraction | null;
   loading: boolean;
+  elapsed?: number;
+  error?: string | null;
   onDone: (summary: string) => void;
 }
 
@@ -19,7 +21,9 @@ export interface ExtractionReviewProps {
  * accepting, because the alternative is losing what you typed. Unchecking is the
  * only friction the flow ever asks for, and only when the AI got it wrong.
  */
-export function ExtractionReview({ captureId, extraction, loading, onDone }: ExtractionReviewProps) {
+export function ExtractionReview({
+  captureId, extraction, loading, elapsed = 0, error, onDone,
+}: ExtractionReviewProps) {
   const [accepted, setAccepted] = useState<string[]>([]);
   const [edits, setEdits] = useState<Record<string, Record<string, unknown>>>({});
   const [saving, setSaving] = useState(false);
@@ -58,10 +62,26 @@ export function ExtractionReview({ captureId, extraction, loading, onDone }: Ext
     }
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col gap-md px-xl py-lg">
+        <p className="t-body">Your text is saved, but it could not be read into objects.</p>
+        <Meta className="block">{error}</Meta>
+        <div className="flex gap-sm">
+          <Button variant="primary" onClick={() => void resolve(true)} disabled={saving}>
+            Keep as note
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col gap-sm px-xl py-lg">
-        <Meta>Reading what you wrote…</Meta>
+        <Meta>
+          {elapsed > 6 ? 'Still reading — a longer capture takes a few seconds…' : 'Reading what you wrote…'}
+        </Meta>
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-row w-full" />
         ))}

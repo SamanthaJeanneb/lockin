@@ -61,6 +61,7 @@ export async function POST(req: Request) {
         system: DEBRIEF_SYSTEM(ctx) + (mentionBlock ? `\n\n${mentionBlock}` : ''),
         user: text,
         maxTokens: 4000,
+        effort: 'low',
         schema: DEBRIEF_SCHEMA as unknown as Record<string, unknown>,
         fallback: model,
       });

@@ -57,6 +57,7 @@ export async function extractCapture(captureId: string): Promise<Extraction> {
         system: EXTRACTION_SYSTEM(ctx) + (mentionBlock ? `\n\n${mentionBlock}` : ''),
         user: text,
         maxTokens: 8000,
+        effort: 'low',
         schema: EXTRACTION_SCHEMA as unknown as Record<string, unknown>,
         fallback: EMPTY,
       }),

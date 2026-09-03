@@ -4,7 +4,8 @@ import { Paperclip } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { api } from '@/lib/client-api';
 import type { Extraction } from '@/lib/db/schema';
-import { Dialog, IconButton, Textarea, useToast } from '@/components/ui';
+import { Dialog, IconButton, useToast } from '@/components/ui';
+import { MentionTextarea, type MentionTextareaHandle } from './MentionTextarea';
 import { VoiceRecorder } from './VoiceRecorder';
 import { ExtractionReview } from './ExtractionReview';
 
@@ -23,7 +24,9 @@ export function CaptureModal() {
   const [captureId, setCaptureId] = useState<string | null>(null);
   const [extraction, setExtraction] = useState<Extraction | null>(null);
   const [polling, setPolling] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const inputRef = useRef<MentionTextareaHandle>(null);
   const open = modal === 'capture';
 
   useEffect(() => {
@@ -32,6 +35,8 @@ export function CaptureModal() {
       setCaptureId(null);
       setExtraction(null);
       setPolling(false);
+      setError(null);
+      setElapsed(0);
     }
   }, [open]);
 
@@ -47,28 +52,50 @@ export function CaptureModal() {
     setPolling(true);
   }, [draft, setDraft]);
 
-  // Poll for the extraction. Ten attempts at 700ms covers the p95 budget.
+  /**
+   * Poll until the server says it is done, or a minute passes.
+   *
+   * The previous budget was ten seconds, which was under the real extraction
+   * time — so the poller gave up, the review card fell through to its empty
+   * state, and the only button left said "Keep as note". Every capture looked
+   * like it had been filed as a note when in fact the objects were sitting in
+   * the row, extracted and unread.
+   */
   useEffect(() => {
     if (!polling || !captureId) return;
     let cancelled = false;
-    let attempts = 0;
+    const startedAt = Date.now();
+    const LIMIT_MS = 60_000;
+
     const tick = async () => {
-      attempts++;
-      const res = await api.get<{ processedAt: string | null; extraction: Extraction | null }>(
-        `/api/capture/${captureId}`,
-      );
-      if (cancelled) return;
-      if (res.processedAt) {
-        setExtraction(res.extraction);
-        setPolling(false);
-        return;
+      try {
+        const res = await api.get<{
+          processedAt: string | null;
+          extraction: Extraction | null;
+          error: string | null;
+        }>(`/api/capture/${captureId}`);
+        if (cancelled) return;
+
+        if (res.processedAt || res.error) {
+          setExtraction(res.extraction);
+          setError(res.error);
+          setPolling(false);
+          return;
+        }
+      } catch {
+        // A transient failure mid-poll is not a reason to give up.
       }
-      if (attempts < 14) setTimeout(tick, 700);
-      else {
+      if (cancelled) return;
+
+      if (Date.now() - startedAt < LIMIT_MS) {
+        setElapsed(Math.round((Date.now() - startedAt) / 1000));
+        setTimeout(tick, 800);
+      } else {
         setPolling(false);
-        setExtraction(null);
+        setError('Extraction is taking longer than a minute. Your text is saved — reopen this capture from Brain to see what it found.');
       }
     };
+
     const t = setTimeout(tick, 500);
     return () => {
       cancelled = true;
@@ -102,6 +129,8 @@ export function CaptureModal() {
           captureId={captureId}
           extraction={extraction}
           loading={polling}
+          elapsed={elapsed}
+          error={error}
           onDone={(summary) => {
             toast.show(summary);
             close();
@@ -109,24 +138,20 @@ export function CaptureModal() {
         />
       ) : (
         <div className="flex flex-col px-xl py-lg">
-          <Textarea
+          <MentionTextarea
             ref={inputRef}
-            autoGrow
             rows={4}
             value={draft}
-            placeholder="Met Alex at lunch, he's at OpenAI and interested in robotics. Follow up Tuesday."
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || !e.shiftKey)) {
-                e.preventDefault();
-                void submit();
-              }
-            }}
+            placeholder="Met @Alex at lunch, he's at OpenAI and interested in robotics. Follow up Tuesday."
+            onChange={setDraft}
+            onSubmit={() => void submit()}
             className="min-h-[120px] border-0 p-0 focus:border-0"
           />
 
           <div className="mt-lg flex items-center justify-between border-t border-hairline pt-md">
-            <span className="t-caption text-ink-faint">↵ to capture · ⇧↵ for a new line</span>
+            <span className="t-caption text-ink-faint">
+              ↵ to capture · ⇧↵ for a new line · @ to mention
+            </span>
             <div className="flex items-center gap-xs">
               <VoiceRecorder onText={(t) => setDraft(draft ? `${draft}\n${t}` : t)} />
               <IconButton label="Attach a file" onClick={() => document.getElementById('capture-file')?.click()}>

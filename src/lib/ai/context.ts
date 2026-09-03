@@ -49,7 +49,7 @@ export async function promptContext(
         ),
       )
       .orderBy(desc(object.updatedAt))
-      .limit(120);
+      .limit(60);
     ctx.openItems = items.map((i) => ({
       id: i.id,
       type: i.type,
@@ -65,7 +65,7 @@ export async function promptContext(
       .from(object)
       .where(and(eq(object.userId, userId), eq(object.type, 'person'), isNull(object.deletedAt)))
       .orderBy(desc(object.updatedAt))
-      .limit(150);
+      .limit(80);
     ctx.people = people.map((p) => ({
       id: p.id,
       title: p.title,

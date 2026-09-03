@@ -17,6 +17,13 @@ export interface AskOptions {
   maxTokens?: number;
   temperature?: number;
   model?: string;
+  /**
+   * How hard the model should think. Extraction and matching are tightly
+   * specified — a schema plus worked examples — so they run at `low`, which is
+   * what makes a capture feel instant rather than taking fifteen seconds.
+   * Judgement calls (should-I, what-if) keep the default.
+   */
+  effort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 }
 
 /**
@@ -58,6 +65,7 @@ export async function askText(opts: AskOptions): Promise<string> {
     ...(withTemperature && opts.temperature !== undefined
       ? { temperature: opts.temperature }
       : {}),
+    ...(opts.effort ? { output_config: { effort: opts.effort } } : {}),
     system: opts.system,
     messages: [{ role: 'user' as const, content: opts.user }],
   });
@@ -111,7 +119,10 @@ export async function askJson<T>(
         max_tokens: opts.maxTokens ?? 4096,
         system: opts.system,
         messages: [{ role: 'user', content: opts.user }],
-        output_config: { format: { type: 'json_schema', schema: opts.schema! } },
+        output_config: {
+          format: { type: 'json_schema', schema: opts.schema! },
+          ...(opts.effort ? { effort: opts.effort } : {}),
+        },
       }),
     );
     const text = res.content
