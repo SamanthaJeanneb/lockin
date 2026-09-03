@@ -1,4 +1,4 @@
-# Working on Life OS
+# Working on LockIn
 
 ## Before you push
 
@@ -101,7 +101,7 @@ stamps in its mount effect.
 will pass for whichever project runs first and fail for the rest. Create the row
 you are going to mutate, then delete it. `daily-loop.spec.ts` shows the pattern.
 
-The suite runs against the dev server on purpose. `LIFEOS_DEV_USER` is inert
+The suite runs against the dev server on purpose. `LOCKIN_DEV_USER` is inert
 when `NODE_ENV` is production — that guard is the point of it — so a production
 build has no way to sign in without a real auth provider. CI runs
 `npm run build` as its own step to prove the app compiles.

@@ -37,7 +37,7 @@ export const env = {
   twilioToken: opt('TWILIO_AUTH_TOKEN'),
   twilioPhone: opt('TWILIO_PHONE_NUMBER'),
   resendKey: opt('RESEND_API_KEY'),
-  emailFrom: opt('EMAIL_FROM') ?? 'Life OS <onboarding@resend.dev>',
+  emailFrom: opt('EMAIL_FROM') ?? 'LockIn <onboarding@resend.dev>',
 
   // Push
   vapidPublic: opt('NEXT_PUBLIC_VAPID_PUBLIC_KEY'),
@@ -59,7 +59,7 @@ export const env = {
    * from this account so the whole app can be exercised against a local
    * Postgres with no auth provider configured. Ignored in production, always.
    */
-  devUser: process.env.NODE_ENV === 'production' ? undefined : opt('LIFEOS_DEV_USER'),
+  devUser: process.env.NODE_ENV === 'production' ? undefined : opt('LOCKIN_DEV_USER'),
   nodeEnv: process.env.NODE_ENV ?? 'development',
 } as const;
 

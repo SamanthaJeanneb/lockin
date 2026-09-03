@@ -1,5 +1,5 @@
 -- ============================================================================
--- LIFE OS — MIGRATION 001: core schema
+-- LOCKIN — MIGRATION 001: core schema
 -- ============================================================================
 -- The hybrid graph: typed objects, typed edges between them, an append-only
 -- activity log, and a metric history. Everything the product shows is a

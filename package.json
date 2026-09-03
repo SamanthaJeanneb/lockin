@@ -1,5 +1,5 @@
 {
-  "name": "life-os",
+  "name": "lockin",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -17,9 +17,9 @@
     "db:seed": "tsx scripts/seed.ts",
     "design:check": "bash scripts/design-check.sh",
     "inngest": "npx inngest-cli@latest dev",
-    "db:up": "docker run -d --name lifeos-pg -e POSTGRES_PASSWORD=lifeos -e POSTGRES_USER=lifeos -e POSTGRES_DB=lifeos -p 54322:5432 pgvector/pgvector:pg16 || docker start lifeos-pg",
-    "db:down": "docker stop lifeos-pg",
-    "db:reset": "npm run db:down; docker rm -f lifeos-pg; npm run db:up && sleep 4 && npm run db:migrate && npm run db:seed",
+    "db:up": "docker run -d --name lockin-pg -e POSTGRES_PASSWORD=lockin -e POSTGRES_USER=lockin -e POSTGRES_DB=lockin -p 54322:5432 pgvector/pgvector:pg16 || docker start lockin-pg",
+    "db:down": "docker stop lockin-pg",
+    "db:reset": "npm run db:down; docker rm -f lockin-pg; npm run db:up && sleep 4 && npm run db:migrate && npm run db:seed",
     "e2e:ui": "playwright test --ui",
     "check": "npm run typecheck && npm run design:check && npm test"
   },

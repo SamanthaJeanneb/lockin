@@ -172,7 +172,7 @@ export async function writeBack(
     calendarId: 'primary',
     requestBody: {
       summary: ev.title,
-      description: `${ev.description ?? ''}\n\nLife OS: ${env.appUrl}/work/tasks/${ev.objectId}`.trim(),
+      description: `${ev.description ?? ''}\n\nLockIn: ${env.appUrl}/work/tasks/${ev.objectId}`.trim(),
       start: { dateTime: ev.start.toISOString() },
       end: { dateTime: ev.end.toISOString() },
     },

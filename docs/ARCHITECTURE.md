@@ -1,8 +1,8 @@
 # Architecture notes
 
 Decisions that are not obvious from reading the code, and the reasoning behind
-them. The specification of record is in `life-os-build-direction.md`,
-`life-os-ux-spec.md` and `DESIGN.md`; this file explains where the
+them. The specification of record is in `lockin-build-direction.md`,
+`lockin-ux-spec.md` and `DESIGN.md`; this file explains where the
 implementation makes a judgement call.
 
 ---

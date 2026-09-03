@@ -159,7 +159,7 @@ export default async function SharedReview({ params }: { params: Promise<{ slug:
 
       <footer className="t-caption border-t border-hairline pt-lg text-ink-subtle">
         {format(new Date(row.periodStart), 'd MMM yyyy')} –{' '}
-        {format(new Date(row.periodEnd), 'd MMM yyyy')} · made with Life OS
+        {format(new Date(row.periodEnd), 'd MMM yyyy')} · made with LockIn
       </footer>
     </main>
   );

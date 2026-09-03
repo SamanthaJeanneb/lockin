@@ -1,5 +1,5 @@
 -- ============================================================================
--- LIFE OS — MIGRATION 003: the 45-row object vocabulary
+-- LOCKIN — MIGRATION 003: the 45-row object vocabulary
 -- ============================================================================
 -- These rows are injected into every extraction prompt. Adding a type is a
 -- data change, not a code change: ObjectRow and ObjectDetail are type-agnostic.

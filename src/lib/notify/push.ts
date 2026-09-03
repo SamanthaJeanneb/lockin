@@ -84,7 +84,7 @@ async function emailFallback(to: string, payload: PushPayload) {
   await sendEmail({
     to,
     subject: payload.title,
-    html: `<p>${payload.body ?? ''}</p>${payload.url ? `<p><a href="${env.appUrl}${payload.url}">Open Life OS</a></p>` : ''}`,
+    html: `<p>${payload.body ?? ''}</p>${payload.url ? `<p><a href="${env.appUrl}${payload.url}">Open LockIn</a></p>` : ''}`,
   });
 }
 

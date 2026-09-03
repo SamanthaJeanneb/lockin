@@ -12,10 +12,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 
-const EMAIL = process.env.LIFEOS_DEV_USER ?? 'sam@example.com';
+const EMAIL = process.env.LOCKIN_DEV_USER ?? 'sam@example.com';
 
 function devUserId(email: string): string {
-  const h = createHash('sha256').update(`lifeos-dev:${email}`).digest('hex');
+  const h = createHash('sha256').update(`lockin-dev:${email}`).digest('hex');
   return [
     h.slice(0, 8), h.slice(8, 12), `4${h.slice(13, 16)}`,
     ((parseInt(h.slice(16, 17), 16) & 0x3) | 0x8).toString(16) + h.slice(17, 20),

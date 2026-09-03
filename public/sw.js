@@ -1,5 +1,5 @@
 /**
- * Life OS service worker.
+ * LockIn service worker.
  *
  * The app shell and static assets are cached so a reload is instant and the
  * shell renders offline. Data is network-first with a stale-while-revalidate
@@ -8,7 +8,7 @@
  * There is no offline write queue in v1: writes require connectivity and the
  * UI shows a clear retry state rather than pretending to have saved.
  */
-const VERSION = 'life-os-v1';
+const VERSION = 'lockin-v1';
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 
@@ -68,10 +68,10 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'Life OS', body: event.data.text() };
+    payload = { title: 'LockIn', body: event.data.text() };
   }
   event.waitUntil(
-    self.registration.showNotification(payload.title || 'Life OS', {
+    self.registration.showNotification(payload.title || 'LockIn', {
       body: payload.body || '',
       tag: payload.tag,
       data: { url: payload.url || '/' },

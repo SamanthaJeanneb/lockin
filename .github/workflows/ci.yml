@@ -11,17 +11,17 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_USER: lifeos
-          POSTGRES_PASSWORD: lifeos
-          POSTGRES_DB: lifeos
+          POSTGRES_USER: lockin
+          POSTGRES_PASSWORD: lockin
+          POSTGRES_DB: lockin
         ports: ['54322:5432']
         options: >-
           --health-cmd pg_isready --health-interval 5s
           --health-timeout 5s --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://lifeos:lifeos@localhost:54322/lifeos
-      LIFEOS_DEV_USER: ci@example.com
+      DATABASE_URL: postgresql://lockin:lockin@localhost:54322/lockin
+      LOCKIN_DEV_USER: ci@example.com
       ENCRYPTION_KEY: ci-only-key-not-used-for-anything-real
       NEXT_PUBLIC_APP_URL: http://localhost:3000
 

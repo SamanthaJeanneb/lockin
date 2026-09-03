@@ -4,12 +4,12 @@ import { Providers } from './providers';
 import { CHROME } from '@/lib/brand';
 
 export const metadata: Metadata = {
-  title: 'Life OS',
+  title: 'LockIn',
   description:
     'Capture anything in one field. The hierarchy shows whether your days are moving your years.',
   manifest: '/manifest.json',
-  applicationName: 'Life OS',
-  appleWebApp: { capable: true, title: 'Life OS', statusBarStyle: 'default' },
+  applicationName: 'LockIn',
+  appleWebApp: { capable: true, title: 'LockIn', statusBarStyle: 'default' },
 };
 
 export const viewport: Viewport = {
@@ -27,11 +27,11 @@ export const viewport: Viewport = {
  * one thing a token-driven system cannot fix after the fact.
  */
 const THEME_SCRIPT = `(function(){try{
-  var m=document.cookie.match(/lifeos_theme=(light|dark|system)/);
+  var m=document.cookie.match(/lockin_theme=(light|dark|system)/);
   var t=m?m[1]:'system';
   var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
-  var c=document.cookie.match(/lifeos_density=(comfortable|compact)/);
+  var c=document.cookie.match(/lockin_density=(comfortable|compact)/);
   document.documentElement.setAttribute('data-density',c?c[1]:'comfortable');
 }catch(e){}})();`;
 

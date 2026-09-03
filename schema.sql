@@ -1,5 +1,5 @@
 -- ============================================================================
--- LIFE OS — MIGRATION 001: core schema
+-- LOCKIN — MIGRATION 001: core schema
 -- ============================================================================
 -- The hybrid graph: typed objects, typed edges between them, an append-only
 -- activity log, and a metric history. Everything the product shows is a
@@ -803,7 +803,7 @@ language sql stable as $$
    order by 2 desc;
 $$;
 -- ============================================================================
--- LIFE OS — MIGRATION 002: row level security + provisioning
+-- LOCKIN — MIGRATION 002: row level security + provisioning
 -- ============================================================================
 -- Every user-scoped table carries the same policy: you can only touch rows
 -- where user_id = auth.uid(). Verified by the two-user test in the kickoff
@@ -926,7 +926,7 @@ begin
   end if;
 end $$;
 -- ============================================================================
--- LIFE OS — MIGRATION 003: the 45-row object vocabulary
+-- LOCKIN — MIGRATION 003: the 45-row object vocabulary
 -- ============================================================================
 -- These rows are injected into every extraction prompt. Adding a type is a
 -- data change, not a code change: ObjectRow and ObjectDetail are type-agnostic.

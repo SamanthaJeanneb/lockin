@@ -136,7 +136,7 @@ export const getAreas = cache(async (userId: string) => {
 
 /** Stable uuid v5-ish id derived from the dev email, so restarts keep the data. */
 export function devUserId(email: string): string {
-  const hash = createHash('sha256').update(`lifeos-dev:${email}`).digest('hex');
+  const hash = createHash('sha256').update(`lockin-dev:${email}`).digest('hex');
   return [
     hash.slice(0, 8), hash.slice(8, 12),
     `4${hash.slice(13, 16)}`,

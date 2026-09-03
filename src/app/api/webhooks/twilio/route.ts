@@ -17,7 +17,7 @@ function twiml(message: string) {
 }
 
 /**
- * Texting your Life OS number runs the same pipeline as ⌘K and replies with
+ * Texting your LockIn number runs the same pipeline as ⌘K and replies with
  * the summary. The reply is the whole interface on a phone in a grocery store.
  */
 export async function POST(req: Request) {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     if (!match) {
       return twiml(
-        'This number is not linked to a Life OS account. Add it under Settings → Notifications.',
+        'This number is not linked to a LockIn account. Add it under Settings → Notifications.',
       );
     }
 

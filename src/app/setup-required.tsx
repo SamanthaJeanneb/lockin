@@ -20,7 +20,7 @@ export function SetupRequired({ missing }: { missing: string[] }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-measure flex-col justify-center gap-xl p-2xl">
       <div>
-        <h1 className="t-display">Life OS</h1>
+        <h1 className="t-display">LockIn</h1>
         <p className="t-body mt-sm text-ink-muted">
           Almost there. The app needs a database and an auth provider before it can render anything.
         </p>

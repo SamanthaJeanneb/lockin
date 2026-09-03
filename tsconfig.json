@@ -14,7 +14,25 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+
+      /* Workaround, only needed while this project sits in a directory whose
+         name contains "*".
+
+         TypeScript resolves a package `exports` wildcard by substituting the
+         subpath into the *absolute* path, so ".../Get your sh*t together/..."
+         becomes ".../Get your shreactt together/..." and zustand's re-exports
+         fail. `paths` is consulted before the exports map, so pointing at the
+         files directly side-steps it. Node and webpack resolve correctly and
+         need no help.
+
+         Delete this block if the project ever moves to a path without a "*". */
+      "zustand": ["./node_modules/zustand/esm/index.d.mts"],
+      "zustand/vanilla": ["./node_modules/zustand/esm/vanilla.d.mts"],
+      "zustand/react": ["./node_modules/zustand/esm/react.d.mts"],
+      "zustand/*": ["./node_modules/zustand/esm/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules", "e2e"]

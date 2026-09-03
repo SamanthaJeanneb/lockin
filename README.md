@@ -1,4 +1,4 @@
-# Life OS
+# LockIn
 
 A personal operating system for the browser.
 
@@ -236,5 +236,5 @@ jobs. `vercel.json` carries the cron schedule. See
 
 ---
 
-Built from `docs/life-os-build-direction.md`, `docs/life-os-ux-spec.md` and
+Built from `docs/lockin-build-direction.md`, `docs/lockin-ux-spec.md` and
 `docs/DESIGN.md`, which remain the specification of record.

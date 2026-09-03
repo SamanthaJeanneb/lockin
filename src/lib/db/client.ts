@@ -17,9 +17,9 @@ import * as schema from './schema';
  */
 declare global {
   // eslint-disable-next-line no-var
-  var __lifeos_sql: ReturnType<typeof postgres> | undefined;
+  var __lockin_sql: ReturnType<typeof postgres> | undefined;
   // eslint-disable-next-line no-var
-  var __lifeos_db: PostgresJsDatabase<typeof schema> | undefined;
+  var __lockin_db: PostgresJsDatabase<typeof schema> | undefined;
 }
 
 function connect() {
@@ -38,13 +38,13 @@ function connect() {
 }
 
 export function getSql() {
-  globalThis.__lifeos_sql ??= connect();
-  return globalThis.__lifeos_sql;
+  globalThis.__lockin_sql ??= connect();
+  return globalThis.__lockin_sql;
 }
 
 function getDb(): PostgresJsDatabase<typeof schema> {
-  globalThis.__lifeos_db ??= drizzle(getSql(), { schema });
-  return globalThis.__lifeos_db;
+  globalThis.__lockin_db ??= drizzle(getSql(), { schema });
+  return globalThis.__lockin_db;
 }
 
 /** Behaves exactly like a Drizzle instance; opens the socket on first use. */

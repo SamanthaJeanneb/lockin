@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       for (const o of objects) (byType.get(o.type) ?? byType.set(o.type, []).get(o.type)!).push(o);
 
       const md = [
-        `# Life OS export — ${stamp}`,
+        `# LockIn export — ${stamp}`,
         '',
         user.identityStatement ? `> ${user.identityStatement}` : '',
         '',
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
       return new Response(md, {
         headers: {
           'content-type': 'text/markdown; charset=utf-8',
-          'content-disposition': `attachment; filename="life-os-${stamp}.md"`,
+          'content-disposition': `attachment; filename="lockin-${stamp}.md"`,
         },
       });
     }
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify(payload, null, 2), {
       headers: {
         'content-type': 'application/json',
-        'content-disposition': `attachment; filename="life-os-${stamp}.json"`,
+        'content-disposition': `attachment; filename="lockin-${stamp}.json"`,
       },
     });
   } catch (e) {

@@ -6,7 +6,7 @@ import { gotoApp } from './helpers';
 test.describe('the shell at every width', () => {
   test('renders the right pane arrangement', async ({ page }, testInfo) => {
     await gotoApp(page, '/');
-    await expect(page.getByRole('link', { name: 'Life OS' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'LockIn' })).toBeVisible();
 
     const width = page.viewportSize()!.width;
     const nav = page.getByRole('navigation', { name: 'Primary' });

@@ -40,7 +40,7 @@ export function digestHtml(opts: {
         )
         .join('')}
     </table>
-    <p style="margin:24px 0 0"><a href="${opts.url}" style="color:${EMAIL.ink};text-decoration:underline">Open Life OS</a></p>
+    <p style="margin:24px 0 0"><a href="${opts.url}" style="color:${EMAIL.ink};text-decoration:underline">Open LockIn</a></p>
   </div></body></html>`;
 }
 

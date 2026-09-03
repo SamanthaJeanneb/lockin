@@ -2,7 +2,7 @@ import { Inngest } from 'inngest';
 import { env, features } from '@/lib/env';
 
 export const inngest = new Inngest({
-  id: 'life-os',
+  id: 'lockin',
   eventKey: env.inngestEventKey ?? 'local',
 });
 

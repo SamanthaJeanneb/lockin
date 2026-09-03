@@ -17,3 +17,6 @@ next-env.d.ts
 /playwright/.cache
 tsconfig.tsbuildinfo
 .turbo
+
+# The supplied source PDF is 5.6MB of screenshots; keep it local.
+/docs/source/*.pdf

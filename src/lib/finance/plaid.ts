@@ -27,7 +27,7 @@ export function plaid(): PlaidApi {
 export async function createLinkToken(userId: string) {
   const res = await plaid().linkTokenCreate({
     user: { client_user_id: userId },
-    client_name: 'Life OS',
+    client_name: 'LockIn',
     products: [Products.Transactions],
     country_codes: [CountryCode.Us],
     language: 'en',

@@ -32,7 +32,7 @@ export default defineConfig({
   /**
    * Always the dev server, deliberately.
    *
-   * `LIFEOS_DEV_USER` is inert when NODE_ENV is production — that guard is the
+   * `LOCKIN_DEV_USER` is inert when NODE_ENV is production — that guard is the
    * whole point of it — so a production build has no way to sign in without a
    * real auth provider. CI still runs `npm run build` as its own step to prove
    * the app compiles; these tests exercise behaviour, not the bundler.

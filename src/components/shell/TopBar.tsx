@@ -23,7 +23,7 @@ export function TopBar({ syncing, compact }: { syncing?: boolean; compact?: bool
       ) : null}
 
       <Link href="/" className="t-heading-sm shrink-0 no-underline">
-        Life OS
+        LockIn
       </Link>
 
       <button
@@ -50,7 +50,7 @@ export function TopBar({ syncing, compact }: { syncing?: boolean; compact?: bool
         {syncing ? 'syncing' : 'synced'}
       </span>
 
-      <IconButton label="Ask Life OS" onClick={() => openModal('palette')}>
+      <IconButton label="Ask LockIn" onClick={() => openModal('palette')}>
         <Sparkle size={16} strokeWidth={1.5} />
       </IconButton>
 

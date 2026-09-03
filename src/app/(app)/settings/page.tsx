@@ -60,8 +60,8 @@ export default function SettingsPage() {
 
   // The theme is mirrored into a cookie so the pre-paint script can read it.
   useEffect(() => {
-    document.cookie = `lifeos_theme=${ui.theme};path=/;max-age=31536000;samesite=lax`;
-    document.cookie = `lifeos_density=${ui.density};path=/;max-age=31536000;samesite=lax`;
+    document.cookie = `lockin_theme=${ui.theme};path=/;max-age=31536000;samesite=lax`;
+    document.cookie = `lockin_density=${ui.density};path=/;max-age=31536000;samesite=lax`;
   }, [ui.theme, ui.density]);
 
   if (isLoading || !data) return <Skeleton className="m-xl h-[400px]" />;

@@ -1,5 +1,5 @@
 -- ============================================================================
--- LIFE OS — MIGRATION 002: row level security + provisioning
+-- LOCKIN — MIGRATION 002: row level security + provisioning
 -- ============================================================================
 -- Every user-scoped table carries the same policy: you can only touch rows
 -- where user_id = auth.uid(). Verified by the two-user test in the kickoff

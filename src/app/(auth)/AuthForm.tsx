@@ -55,7 +55,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   return (
     <form onSubmit={submit} className="flex flex-col gap-lg">
       <div>
-        <h1 className="t-title">Life OS</h1>
+        <h1 className="t-title">LockIn</h1>
         <Meta className="mt-xxs block">
           {mode === 'signup' ? 'One field to capture everything.' : 'Welcome back.'}
         </Meta>

@@ -1,7 +1,7 @@
 # API reference
 
 Every route is a Next.js Route Handler under `/api`, authenticated by the
-Supabase session cookie (or `LIFEOS_DEV_USER` locally), and scoped by `user_id`
+Supabase session cookie (or `LOCKIN_DEV_USER` locally), and scoped by `user_id`
 in code as well as by row-level security in the database.
 
 Errors share one shape: `{ "error": "message" }` with a status of 401

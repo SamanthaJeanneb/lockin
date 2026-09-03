@@ -1,4 +1,4 @@
-# Life OS — setup guide
+# LockIn — setup guide
 
 Everything you need to click, in the order you need to click it.
 
@@ -40,11 +40,11 @@ Open <http://localhost:3000>.
 `.env.local` already contains everything this needs:
 
 ```bash
-DATABASE_URL=postgresql://lifeos:lifeos@localhost:54322/lifeos
-LIFEOS_DEV_USER=sam@example.com
+DATABASE_URL=postgresql://lockin:lockin@localhost:54322/lockin
+LOCKIN_DEV_USER=sam@example.com
 ```
 
-### About `LIFEOS_DEV_USER`
+### About `LOCKIN_DEV_USER`
 
 This is a **development-only sign-in bypass**. When it is set, every request is
 treated as coming from that account, so you can use the whole product before
@@ -154,7 +154,7 @@ http://localhost:3000/auth/callback
 https://your-domain.com/auth/callback
 ```
 
-Then remove `LIFEOS_DEV_USER` from `.env.local` and restart. `/login` now does
+Then remove `LOCKIN_DEV_USER` from `.env.local` and restart. `/login` now does
 real authentication.
 
 ### 2.6 Create the storage bucket
@@ -325,7 +325,7 @@ an app-specific password from <https://appleid.apple.com>.
 
 ### 6.1 Twilio — capture by text
 
-Texting your Life OS number runs the same pipeline as `⌘K` and replies with a
+Texting your LockIn number runs the same pipeline as `⌘K` and replies with a
 summary. This is the whole interface when you are away from a desk.
 
 1. <https://console.twilio.com> → sign up (trial credit is enough).
@@ -364,7 +364,7 @@ subscription (which is most of iOS Safari).
 
 ```bash
 RESEND_API_KEY=re_...
-EMAIL_FROM="Life OS <hello@your-domain.com>"
+EMAIL_FROM="LockIn <hello@your-domain.com>"
 ```
 
 Without a verified domain you can still send from `onboarding@resend.dev` to
@@ -489,7 +489,7 @@ and go back and update the redirect URIs you registered in §2.5, §4.3, §5 and
 ### Before you ship
 
 - [ ] `ENCRYPTION_KEY` is a fresh `openssl rand -base64 32`, not the dev default
-- [ ] `LIFEOS_DEV_USER` is **not** set in production
+- [ ] `LOCKIN_DEV_USER` is **not** set in production
 - [ ] The Supabase pooler string is in `DATABASE_URL` (port 6543)
 - [ ] `schema.sql` has been applied to the production database
 - [ ] The `attachments` storage bucket exists
@@ -552,7 +552,7 @@ You are using the direct connection string, not the transaction pooler. Switch
 `DATABASE_URL` to the port 6543 URI.
 
 **Everything returns 401**
-No session and no `LIFEOS_DEV_USER`. Either sign in at `/login`, or add the dev
+No session and no `LOCKIN_DEV_USER`. Either sign in at `/login`, or add the dev
 user line back for local work.
 
 **Extraction never returns**
@@ -574,10 +574,20 @@ Confirm both VAPID keys are set and that the public one is the
 first. Check `/api/cron/send-notifications` runs.
 
 **A module fails to resolve with a mangled path**
-Check the absolute path of the project for a `*` character. TypeScript
-substitutes package `exports` wildcards into the full path, so a directory named
-`Get your sh*t together` breaks resolution for every modern package. Move the
-repo to a path without `*`.
+Check the absolute path of the project for a `*` character. TypeScript resolves
+a package `exports` wildcard by substituting the subpath into the *absolute*
+path, so a directory named `Get your sh*t together` turns
+`.../sh*t together/node_modules/zustand/esm/react.d.mts` into
+`.../shreactt together/...` and the import fails.
+
+Node and webpack resolve correctly — this only affects `tsc`, which means
+`npm run typecheck` and `next build`, not `npm run dev`.
+
+`tsconfig.json` carries a `paths` block that points at the affected files
+directly; `paths` is consulted before the exports map, so it side-steps the bug.
+Only `zustand` needs it today. If another package starts failing the same way,
+add it to that block in the same shape. Moving the repo to a path without a `*`
+removes the need for the block entirely.
 
 **`npm run e2e` times out on first run**
 The dev server compiles routes on demand. Run it once (`npm run dev`, click
@@ -591,12 +601,12 @@ around) or run the suite against a production build:
 ```bash
 # ── Required ──────────────────────────────────────────────────────────────────
 DATABASE_URL=                       # Postgres. Supabase: use the pooler, port 6543
-NEXT_PUBLIC_SUPABASE_URL=           # unless LIFEOS_DEV_USER is set locally
+NEXT_PUBLIC_SUPABASE_URL=           # unless LOCKIN_DEV_USER is set locally
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=          # server only — bypasses RLS
 
 # ── Local development only ────────────────────────────────────────────────────
-LIFEOS_DEV_USER=sam@example.com     # sign-in bypass; ignored in production
+LOCKIN_DEV_USER=sam@example.com     # sign-in bypass; ignored in production
 
 # ── Intelligence ──────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY=                  # extraction, matching, breakdown, rewriting
@@ -620,7 +630,7 @@ TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
 RESEND_API_KEY=
-EMAIL_FROM="Life OS <hello@your-domain.com>"
+EMAIL_FROM="LockIn <hello@your-domain.com>"
 
 # ── Push ──────────────────────────────────────────────────────────────────────
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=       # public by design
@@ -645,7 +655,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | Key | Turns on | Without it |
 |---|---|---|
 | `DATABASE_URL` | Everything | The app shows a setup screen |
-| Supabase keys | Real accounts, file uploads | Use `LIFEOS_DEV_USER` locally |
+| Supabase keys | Real accounts, file uploads | Use `LOCKIN_DEV_USER` locally |
 | `ANTHROPIC_API_KEY` | Extraction, breakdown, rewriting, what-if, should-I | Capture stores raw text; matching stays keyword-based |
 | `OPENAI_API_KEY` | Semantic matching and duplicates, voice capture | Keyword + trigram matching; no voice |
 | `PLAID_*` | Live balances and transactions | Manual accounts and captured expenses |

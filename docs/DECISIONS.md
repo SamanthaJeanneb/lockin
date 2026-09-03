@@ -8,7 +8,7 @@ reasoning rather than guess at it.
 
 ### The base schema was written from scratch
 
-`life-os-schema-002-web.sql` was supplied, but the migration it extends
+`lockin-schema-002-web.sql` was supplied, but the migration it extends
 (`app_user`, `object`, `edge`, `activity`, `metric`, `model_fact`, `capture`,
 `account`, `transaction`, `calendar_event`, `review`, `integration`,
 `rollup_progress()` and the activity triggers) was not in the folder.
@@ -35,7 +35,7 @@ Adding or renaming one is a migration, not a code change.
 ### A local dev sign-in bypass exists
 
 The product needs Supabase for auth, but requiring a cloud account before anyone
-can see the app run is a bad first five minutes. `LIFEOS_DEV_USER` treats every
+can see the app run is a bad first five minutes. `LOCKIN_DEV_USER` treats every
 request as coming from one account.
 
 It is guarded on `NODE_ENV !== 'production'` in `src/lib/env.ts`, so there is no
@@ -126,3 +126,23 @@ caught by a component test; the action is now a single button with a check icon.
 - **Microsoft Graph and CalDAV are configured but not implemented.** The
   integration table, the token encryption and the sync-job shape are all generic
   over `kind`; Google is the one wired end to end.
+
+
+### The project lives in a directory whose name contains `*`
+
+`Get your sh*t together` is the folder the specification arrived in and the
+folder the code ships in. That costs one workaround.
+
+TypeScript resolves a package `exports` wildcard by substituting the subpath
+into the absolute path, so `.../sh*t together/node_modules/zustand/esm/*` is
+rewritten with the subpath in place of the `*` that is part of the *directory
+name*. `zustand/react` becomes `.../shreactt together/...`, which does not
+exist, and every symbol it exports resolves to `any`.
+
+Node and webpack are unaffected, so `npm run dev` never showed it — only `tsc`
+did, which meant `npm run typecheck` and `next build`.
+
+`tsconfig.json` maps the four zustand entry points directly. `paths` is
+consulted before the exports map, so the wildcard is never evaluated. It is
+scoped to the one package that needs it and carries a comment explaining when
+to delete it. If the repo ever moves to a path without a `*`, the block can go.

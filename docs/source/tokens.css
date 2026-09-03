@@ -1,5 +1,5 @@
 /* ============================================================================
-   LOCKIN — tokens.css
+   LIFE OS — tokens.css
    THE single source of truth for every style value in the product.
 
    No other file may define a color, radius, shadow, font size, spacing value,
@@ -17,6 +17,7 @@
    Load exactly four weights. Montserrat 600/700, Outfit 400/500.
    In Next.js prefer next/font and assign to these variables.
    ------------------------------------------------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Outfit:wght@400;500&display=swap');
 
 :root {
   --font-heading: 'Montserrat', system-ui, -apple-system, sans-serif;
@@ -246,8 +247,7 @@
   --text-read-heading-ls:   -0.5px;
   --text-mono-size:         12px;  --text-mono-lh:             1.50;
 
-  /* Space — 4px base, plus the 1px hairline step used for chart cell gaps */
-  --space-px:  1px;
+  /* Space — 4px base */
   --space-xxs: 2px;
   --space-xs:  4px;
   --space-sm:  8px;
@@ -284,7 +284,6 @@
   --focus-ring-w:      2px;
   --focus-ring-offset: 2px;
   --read-measure:      680px;
-  --label-gutter:      110px;   /* row-label column in charts and the heat strip */
 
   /* Motion */
   --dur-instant:  90ms;
