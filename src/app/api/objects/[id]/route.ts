@@ -114,7 +114,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const token = uid();
     const [row] = await db
       .update(object)
-      .set({ deletedAt: new Date(), props: undefined })
+      .set({ deletedAt: new Date() })
       .where(and(eq(object.id, id), eq(object.userId, user.id)))
       .returning({ id: object.id });
     if (!row) return fail('Not found', 404);
