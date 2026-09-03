@@ -21,7 +21,8 @@
     "db:down": "docker stop lockin-pg",
     "db:reset": "npm run db:down; docker rm -f lockin-pg; npm run db:up && sleep 4 && npm run db:migrate && npm run db:seed",
     "e2e:ui": "playwright test --ui",
-    "check": "npm run typecheck && npm run design:check && npm test"
+    "check": "npm run typecheck && npm run design:check && npm test",
+    "auth:smoke": "node scripts/auth-smoke.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",

@@ -8,10 +8,23 @@ function opt(name: string): string | undefined {
   return v && v.length > 0 ? v : undefined;
 }
 
+/**
+ * The same thing as `opt`, for values the browser needs.
+ *
+ * Next replaces `process.env.NEXT_PUBLIC_X` in client code at build time, but
+ * only where it is written out literally — a computed `process.env[name]`
+ * lookup is left alone, and in the browser it reads as undefined. So every
+ * public variable is spelled out here, in full, on purpose. Shortening these
+ * into `opt('NEXT_PUBLIC_...')` silently breaks sign-in.
+ */
+function pub(value: string | undefined): string | undefined {
+  return value && value.length > 0 ? value : undefined;
+}
+
 export const env = {
   // Required for anything to work
-  supabaseUrl: opt('NEXT_PUBLIC_SUPABASE_URL'),
-  supabaseAnonKey: opt('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  supabaseUrl: pub(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  supabaseAnonKey: pub(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   supabaseServiceKey: opt('SUPABASE_SERVICE_ROLE_KEY'),
   databaseUrl: opt('DATABASE_URL'),
 
@@ -40,7 +53,7 @@ export const env = {
   emailFrom: opt('EMAIL_FROM') ?? 'LockIn <onboarding@resend.dev>',
 
   // Push
-  vapidPublic: opt('NEXT_PUBLIC_VAPID_PUBLIC_KEY'),
+  vapidPublic: pub(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
   vapidPrivate: opt('VAPID_PRIVATE_KEY'),
   vapidSubject: opt('VAPID_SUBJECT') ?? 'mailto:hello@example.com',
 
@@ -55,7 +68,7 @@ export const env = {
   // Crypto
   encryptionKey: opt('ENCRYPTION_KEY'),
 
-  appUrl: opt('NEXT_PUBLIC_APP_URL') ?? 'http://localhost:3000',
+  appUrl: pub(process.env.NEXT_PUBLIC_APP_URL) ?? 'http://localhost:3000',
 
   /**
    * Development-only sign-in bypass. When set, requests are treated as coming

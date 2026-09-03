@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/client-api';
 import { useApp } from '@/lib/store';
 import { relative } from '@/lib/format';
-import { supabaseBrowser } from '@/lib/supabase/browser';
+import { SignOutButton } from '@/components/shell/SignOutButton';
 import {
   Button, Divider, FieldRow, Input, InlineField, Meta, SectionHeader, Segmented, Skeleton, useToast,
 } from '@/components/ui';
@@ -252,14 +252,14 @@ export default function SettingsPage() {
             Export Markdown
           </a>
         </Button>
-        <Button
-          onClick={async () => {
-            await supabaseBrowser().auth.signOut();
-            window.location.href = '/login';
-          }}
-        >
-          Sign out
-        </Button>
+      </div>
+
+      <Divider clearance="lg" />
+
+      <SectionHeader title="Account" size="heading-sm" as="h2" />
+      <div className="flex flex-col items-start gap-sm">
+        <Meta>Signed in as {data.user.email}</Meta>
+        <SignOutButton />
       </div>
     </div>
   );

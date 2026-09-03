@@ -6,6 +6,7 @@ import { api } from '@/lib/client-api';
 import { DEFAULT_AREAS, HORIZONS, HORIZON_LABEL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Button, Divider, Input, Meta, Select, Textarea, useToast } from '@/components/ui';
+import { SignOutButton } from '@/components/shell/SignOutButton';
 
 const STEPS = ['Who you are', 'Three goals', 'First capture', 'Connect something'] as const;
 
@@ -188,6 +189,13 @@ export default function OnboardingPage() {
             Start using it
           </Button>
         )}
+      </div>
+
+      {/* Onboarding is the one screen that holds a new account before the rest
+          of the app is reachable, so the way out has to live here too. */}
+      <div className="mt-xl flex items-center gap-sm border-t border-hairline pt-md">
+        <Meta>Signed in as the wrong account?</Meta>
+        <SignOutButton variant="ghost" />
       </div>
     </div>
   );
