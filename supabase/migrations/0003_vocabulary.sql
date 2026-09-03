@@ -1,0 +1,173 @@
+-- ============================================================================
+-- LIFE OS — MIGRATION 003: the 45-row object vocabulary
+-- ============================================================================
+-- These rows are injected into every extraction prompt. Adding a type is a
+-- data change, not a code change: ObjectRow and ObjectDetail are type-agnostic.
+-- ============================================================================
+
+insert into object_type
+  (key, label, plural, category, icon, surface, default_status, statuses,
+   is_completable, has_progress, has_schedule, description, position)
+values
+-- ── Work (7) ────────────────────────────────────────────────────────────────
+('task','Task','Tasks','work','Circle','/work/board','backlog',
+ '{backlog,next,today,doing,waiting,done}', true, false, true,
+ 'A single action you can finish in one sitting.', 1),
+('project','Project','Projects','work','FolderKanban','/work/projects','active',
+ '{idea,active,paused,done,parked}', true, true, true,
+ 'A body of work with milestones that serves a goal.', 2),
+('milestone','Milestone','Milestones','work','Diamond','/work/projects','open',
+ '{open,reached,dropped}', true, true, true,
+ 'A checkpoint inside a project with a date.', 3),
+('habit','Habit','Habits','work','Repeat','/work/board','active',
+ '{active,paused,retired}', true, true, true,
+ 'Something you do on a cadence, measured by count or value.', 4),
+('waiting_on','Waiting on','Waiting on','work','Hourglass','/work/waiting','waiting',
+ '{waiting,received,dropped}', true, false, false,
+ 'Something a person owes you. Ages until it arrives.', 5),
+('backlog_item','Backlog item','Backlog','work','Inbox','/work/backlog','someday',
+ '{now,next,later,someday,maybe,promoted,archived}', false, false, false,
+ 'A thing you might do. Ages visibly.', 6),
+('routine','Routine','Routines','work','ListChecks','/work/board','active',
+ '{active,paused,retired}', false, false, true,
+ 'An ordered checklist you run repeatedly.', 7),
+
+-- ── Goals (2) ───────────────────────────────────────────────────────────────
+('goal','Goal','Goals','goals','Target','/goals/tree','active',
+ '{active,paused,done,dropped}', true, true, true,
+ 'An outcome at a horizon, with a metric and a deadline.', 10),
+('identity','Identity statement','Identity','goals','Compass','/goals/tree','active',
+ '{active,retired}', false, false, false,
+ 'The one sentence at the top of the tree.', 11),
+
+-- ── Brain (9) ───────────────────────────────────────────────────────────────
+('journal','Journal entry','Journal','brain','BookOpen','/brain',null,
+ '{}', false, false, false,
+ 'Stored verbatim. Never rewritten by the system.', 20),
+('note','Note','Notes','brain','FileText','/brain',null,
+ '{}', false, false, false,
+ 'A block document with @mentions that create real edges.', 21),
+('thought','Thought','Thoughts','brain','Lightbulb','/brain',null,
+ '{}', false, false, false,
+ 'A fragment. No structure required.', 22),
+('draft','Draft','Drafts','brain','PenLine','/brain','draft',
+ '{draft,ready,sent,discarded}', true, false, false,
+ 'A message with a recipient and a writing assistant.', 23),
+('idea','Idea','Ideas','brain','Sparkles','/brain','raw',
+ '{raw,exploring,validating,building,shipped,parked}', false, true, false,
+ 'Moves through a pipeline. Promotes to a project.', 24),
+('decision','Decision','Decisions','brain','Scale','/brain','made',
+ '{considering,made,revisit,reversed}', false, false, false,
+ 'Structured: reasoning, alternatives, revisit date.', 25),
+('quote','Quote','Quotes','brain','Quote','/brain',null,
+ '{}', false, false, false,
+ 'A passage worth keeping, linked to its source.', 26),
+('save','Save','Saves','brain','Bookmark','/brain','unread',
+ '{unread,read,archived}', true, false, false,
+ 'A link kept for later. Clusters into interests.', 27),
+('question','Open question','Questions','brain','HelpCircle','/brain','open',
+ '{open,answered,dropped}', true, false, false,
+ 'Something unresolved you want to return to.', 28),
+
+-- ── People (3) ──────────────────────────────────────────────────────────────
+('person','Person','People','people','User','/people','active',
+ '{active,dormant,archived}', false, false, false,
+ 'Someone in your life, with a learned contact cadence.', 30),
+('interaction','Interaction','Interactions','people','MessageSquare','/people',null,
+ '{}', false, false, false,
+ 'One conversation. Feeds the cadence calculation.', 31),
+('group','Group','Groups','people','Users','/people','active',
+ '{active,archived}', false, false, false,
+ 'A team, a family, a circle of friends.', 32),
+
+-- ── Library (7) ─────────────────────────────────────────────────────────────
+('book','Book','Books','library','Book','/library/books','want',
+ '{want,reading,finished,abandoned}', true, true, false,
+ 'With notes, quotes, key ideas and who recommended it.', 40),
+('article','Article','Articles','library','Newspaper','/library/articles','unread',
+ '{unread,reading,read,archived}', true, false, false,
+ 'Long-form reading kept with its highlights.', 41),
+('podcast','Podcast','Podcasts','library','Mic','/library/media','want',
+ '{want,listening,finished}', true, false, false,
+ 'An episode or a show.', 42),
+('video','Video','Videos','library','Video','/library/media','want',
+ '{want,watching,finished}', true, false, false,
+ 'A film, a talk, a series.', 43),
+('course','Course','Courses','library','GraduationCap','/library/media','want',
+ '{want,taking,finished,abandoned}', true, true, false,
+ 'Structured learning with progress.', 44),
+('place','Place','Places','library','MapPin','/library/places','want',
+ '{want,visited,lived,archived}', true, false, false,
+ 'Somewhere to go, or somewhere you went.', 45),
+('media','Media','Media','library','Film','/library/media','want',
+ '{want,in_progress,finished}', true, false, false,
+ 'Anything else worth tracking that you consume.', 46),
+
+-- ── Interests (2) ───────────────────────────────────────────────────────────
+('interest','Interest','Interests','library','Compass','/library/interests','emerging',
+ '{emerging,active,dormant}', false, false, false,
+ 'Detected from save clustering. Promotes to a goal.', 50),
+('skill','Skill','Skills','library','Wrench','/library/interests','learning',
+ '{curious,learning,practising,proficient}', false, true, false,
+ 'Something you are getting better at, with a level.', 51),
+
+-- ── Life (3) ────────────────────────────────────────────────────────────────
+('experience','Experience','Experiences','life','Camera','/life',null,
+ '{}', false, false, true,
+ 'Something that happened, with date, place and people.', 60),
+('trip','Trip','Trips','life','Plane','/life','planned',
+ '{idea,planned,happening,done}', true, false, true,
+ 'Travel, with a date range and a place.', 61),
+('event','Event','Events','life','CalendarDays','/life','upcoming',
+ '{upcoming,attended,missed}', true, false, true,
+ 'Something on the calendar worth remembering.', 62),
+
+-- ── Money (5) ───────────────────────────────────────────────────────────────
+('expense','Expense','Expenses','money','Receipt','/money/spending',null,
+ '{}', false, false, false,
+ 'A manual spend captured in a sentence.', 70),
+('financial_goal','Financial goal','Financial goals','money','PiggyBank','/money/goals','active',
+ '{active,paused,reached,dropped}', true, true, true,
+ 'A target amount by a date, with a return assumption.', 71),
+('budget','Budget','Budgets','money','Wallet','/money/spending','active',
+ '{active,paused}', false, true, false,
+ 'A monthly ceiling for one category.', 72),
+('subscription','Subscription','Subscriptions','money','RefreshCw','/money/spending','active',
+ '{active,cancelled,paused}', false, false, false,
+ 'A recurring charge, cross-referenced against what you mention.', 73),
+('income_source','Income source','Income','money','TrendingUp','/money/accounts','active',
+ '{active,ended}', false, false, false,
+ 'Salary, contract, dividend, side income.', 74),
+
+-- ── Knowledge (4) ───────────────────────────────────────────────────────────
+('document','Document','Documents','knowledge','Paperclip','/brain',null,
+ '{}', false, false, false,
+ 'An uploaded file with extracted, searchable text.', 80),
+('reference','Reference','References','knowledge','Link','/brain',null,
+ '{}', false, false, false,
+ 'An external resource you point at repeatedly.', 81),
+('list','List','Lists','knowledge','List','/brain','active',
+ '{active,archived}', false, false, false,
+ 'An ordered collection that is not a project.', 82),
+('template','Template','Templates','knowledge','Copy','/brain','active',
+ '{active,archived}', false, false, false,
+ 'A reusable structure you instantiate.', 83),
+
+-- ── Health (3) ──────────────────────────────────────────────────────────────
+('workout','Workout','Workouts','health','Dumbbell','/life',null,
+ '{}', false, false, true,
+ 'One session, with value and unit for the habit metric.', 90),
+('meal','Meal','Meals','health','UtensilsCrossed','/life',null,
+ '{}', false, false, false,
+ 'Logged from capture when you mention it.', 91),
+('measurement','Measurement','Measurements','health','Activity','/life',null,
+ '{}', false, false, false,
+ 'Weight, sleep, resting heart rate — anything numeric over time.', 92)
+
+on conflict (key) do update set
+  label = excluded.label, plural = excluded.plural, category = excluded.category,
+  icon = excluded.icon, surface = excluded.surface,
+  default_status = excluded.default_status, statuses = excluded.statuses,
+  is_completable = excluded.is_completable, has_progress = excluded.has_progress,
+  has_schedule = excluded.has_schedule, description = excluded.description,
+  position = excluded.position;

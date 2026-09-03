@@ -1,0 +1,491 @@
+/* ============================================================================
+   LIFE OS — tokens.css
+   THE single source of truth for every style value in the product.
+
+   No other file may define a color, radius, shadow, font size, spacing value,
+   duration, or easing curve. Components reference the semantic layer only.
+
+   Structure:
+     Layer 1  primitives   raw values, never used directly in components
+     Layer 2  semantic     the only names components may reference
+     Layer 3  scales       type, space, radius, shadow, motion
+
+   Theming: [data-theme="dark"] remaps Layer 2. Components change nothing.
+   ========================================================================= */
+
+/* ── Fonts ───────────────────────────────────────────────────────────────
+   Load exactly four weights. Montserrat 600/700, Outfit 400/500.
+   In Next.js prefer next/font and assign to these variables.
+   ------------------------------------------------------------------------ */
+
+:root {
+  --font-heading: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-body:    'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LAYER 1 — PRIMITIVES
+   True neutral greys. No blue, warm, or violet tint at any step.
+   Never referenced directly by a component.
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --grey-0:    #ffffff;
+  --grey-50:   #fafafa;
+  --grey-100:  #f4f4f4;
+  --grey-150:  #ebebeb;
+  --grey-200:  #e6e6e6;
+  --grey-250:  #e4e4e4;
+  --grey-300:  #d4d4d4;
+  --grey-400:  #b3b3b3;
+  --grey-450:  #b0b0b0;
+  --grey-500:  #8a8a8a;
+  --grey-600:  #5c5c5c;
+  --grey-700:  #3a3a3a;
+  --grey-850:  #2b2b2b;
+  --grey-900:  #171717;
+  --grey-1000: #000000;
+
+  --grey-d-1000: #0e0e0e;
+  --grey-d-950:  #121212;
+  --grey-d-900:  #161616;
+  --grey-d-850:  #1c1c1c;
+  --grey-d-800:  #242424;
+  --grey-d-750:  #272727;
+  --grey-d-700:  #2e2e2e;
+  --grey-d-600:  #363636;
+  --grey-d-500:  #4d4d4d;
+  --grey-d-450:  #4f4f4f;
+  --grey-d-400:  #757575;
+  --grey-d-300:  #a1a1a1;
+  --grey-d-100:  #ededed;
+  --grey-d-50:   #c9c9c9;
+
+  /* Data hues — the ONLY chromatic primitives in the system.
+     Permitted surfaces: chart series, trajectory indicators, 6px legend dots.
+     Forbidden everywhere else. */
+  --hue-green:   #3f8f5f;
+  --hue-amber:   #a8792f;
+  --hue-red:     #b4544c;
+  --hue-steel:   #5b7c99;
+  --hue-sage:    #6f8f6a;
+  --hue-clay:    #a8785c;
+  --hue-taupe:   #9c7b6e;
+  --hue-slate:   #7a8794;
+  --hue-olive:   #a89a68;
+  --hue-teal:    #6d8c8c;
+  --hue-stone:   #8f8577;
+  --hue-moss:    #7f8a7a;
+
+  --hue-green-d: #4fa570;
+  --hue-amber-d: #c9953f;
+  --hue-red-d:   #cf675e;
+  --hue-steel-d: #7196b3;
+  --hue-sage-d:  #87a882;
+  --hue-clay-d:  #c19175;
+  --hue-taupe-d: #b59387;
+  --hue-slate-d: #93a0ad;
+  --hue-olive-d: #c0b280;
+  --hue-teal-d:  #85a5a5;
+  --hue-stone-d: #a89e90;
+  --hue-moss-d:  #98a393;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LAYER 2 — SEMANTIC (LIGHT)
+   The only color names a component may use.
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* Surface */
+  --canvas:          var(--grey-0);
+  --surface-1:       var(--grey-50);
+  --surface-2:       var(--grey-100);
+  --surface-3:       var(--grey-150);
+  --surface-inset:   #f7f7f7;
+
+  /* Hairline — 1px everywhere, no exceptions */
+  --hairline:        var(--grey-200);
+  --hairline-strong: var(--grey-300);
+  --hairline-focus:  var(--grey-400);
+
+  /* Ink */
+  --ink:             var(--grey-900);
+  --ink-muted:       var(--grey-600);
+  --ink-subtle:      var(--grey-500);
+  --ink-faint:       var(--grey-450);
+  --ink-disabled:    var(--grey-300);
+
+  /* Action — monochrome. There is no brand hue. */
+  --action:          var(--grey-900);
+  --action-hover:    var(--grey-1000);
+  --action-pressed:  var(--grey-850);
+  --on-action:       var(--grey-0);
+
+  /* Interaction */
+  --focus-ring:      var(--grey-900);
+  --selection:       var(--grey-250);
+  --scrim:           rgb(23 23 23 / 6%);
+
+  /* Data — charts and trajectory indicators ONLY */
+  --track-on:        var(--hue-green);
+  --track-ahead:     var(--hue-green);
+  --track-behind:    var(--hue-amber);
+  --track-overdue:   var(--hue-red);
+  --track-none:      var(--grey-500);
+
+  --series-1:        var(--hue-steel);
+  --series-2:        var(--hue-sage);
+  --series-3:        var(--hue-clay);
+  --series-4:        var(--hue-taupe);
+  --series-5:        var(--hue-slate);
+  --series-6:        var(--hue-olive);
+  --series-7:        var(--hue-teal);
+  --series-8:        var(--hue-stone);
+  --series-9:        var(--hue-moss);
+  --series-10:       var(--grey-500);
+
+  /* Elevation */
+  --shadow-drag:     0 4px 12px rgb(23 23 23 / 8%);
+  --shadow-popover:  0 4px 16px rgb(23 23 23 / 10%), 0 0 0 1px rgb(23 23 23 / 3%);
+  --shadow-modal:    0 16px 48px rgb(23 23 23 / 14%), 0 0 0 1px rgb(23 23 23 / 6%);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LAYER 2 — SEMANTIC (DARK)
+   Same names, remapped. Authored, not derived.
+   ════════════════════════════════════════════════════════════════════════ */
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas:          var(--grey-d-1000);
+  --surface-1:       var(--grey-d-900);
+  --surface-2:       var(--grey-d-850);
+  --surface-3:       var(--grey-d-800);
+  --surface-inset:   var(--grey-d-950);
+
+  --hairline:        var(--grey-d-750);
+  --hairline-strong: var(--grey-d-600);
+  --hairline-focus:  var(--grey-d-500);
+
+  --ink:             var(--grey-d-100);
+  --ink-muted:       var(--grey-d-300);
+  --ink-subtle:      var(--grey-d-400);
+  --ink-faint:       var(--grey-d-450);
+  --ink-disabled:    #3a3a3a;
+
+  --action:          var(--grey-d-100);
+  --action-hover:    var(--grey-0);
+  --action-pressed:  var(--grey-d-50);
+  --on-action:       var(--grey-d-1000);
+
+  --focus-ring:      var(--grey-d-100);
+  --selection:       var(--grey-d-700);
+  --scrim:           rgb(0 0 0 / 50%);
+
+  --track-on:        var(--hue-green-d);
+  --track-ahead:     var(--hue-green-d);
+  --track-behind:    var(--hue-amber-d);
+  --track-overdue:   var(--hue-red-d);
+  --track-none:      var(--grey-d-400);
+
+  --series-1:        var(--hue-steel-d);
+  --series-2:        var(--hue-sage-d);
+  --series-3:        var(--hue-clay-d);
+  --series-4:        var(--hue-taupe-d);
+  --series-5:        var(--hue-slate-d);
+  --series-6:        var(--hue-olive-d);
+  --series-7:        var(--hue-teal-d);
+  --series-8:        var(--hue-stone-d);
+  --series-9:        var(--hue-moss-d);
+  --series-10:       var(--grey-d-300);
+
+  /* Shadows read weakly on dark — overlays gain a hairline border instead */
+  --shadow-drag:     0 4px 12px rgb(0 0 0 / 35%);
+  --shadow-popover:  0 4px 16px rgb(0 0 0 / 45%), 0 0 0 1px var(--hairline-strong);
+  --shadow-modal:    0 16px 48px rgb(0 0 0 / 60%), 0 0 0 1px var(--hairline-strong);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LAYER 3 — SCALES
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Type — Montserrat ≥16px only, Outfit everywhere else */
+  --text-display-size:      28px;  --text-display-weight:      700;
+  --text-display-lh:        1.18;  --text-display-ls:          -0.8px;
+  --text-title-size:        22px;  --text-title-weight:        700;
+  --text-title-lh:          1.24;  --text-title-ls:            -0.6px;
+  --text-heading-size:      17px;  --text-heading-weight:      600;
+  --text-heading-lh:        1.35;  --text-heading-ls:          -0.3px;
+  --text-heading-sm-size:   16px;  --text-heading-sm-weight:   600;
+  --text-heading-sm-lh:     1.35;  --text-heading-sm-ls:       -0.25px;
+  --text-subheading-size:   14px;  --text-subheading-weight:   500;
+  --text-subheading-lh:     1.40;  --text-subheading-ls:       -0.05px;
+  --text-body-size:         14px;  --text-body-weight:         400;
+  --text-body-lh:           1.50;  --text-body-ls:             -0.05px;
+  --text-body-sm-size:      13px;  --text-body-sm-weight:      400;
+  --text-body-sm-lh:        1.50;  --text-body-sm-ls:          0;
+  --text-caption-size:      12px;  --text-caption-weight:      400;
+  --text-caption-lh:        1.40;  --text-caption-ls:          0;
+  --text-micro-size:        11px;  --text-micro-weight:        500;
+  --text-micro-lh:          1.30;  --text-micro-ls:            0.2px;
+  --text-button-size:       13px;  --text-button-weight:       500;
+  --text-button-lh:         1.20;  --text-button-ls:           0;
+  --text-numeric-size:      13px;  --text-numeric-weight:      500;
+  --text-numeric-lg-size:   26px;  --text-numeric-lg-weight:   700;
+  --text-numeric-lg-ls:     -0.6px;
+  --text-read-size:         17px;  --text-read-weight:         400;
+  --text-read-lh:           1.75;
+  --text-read-heading-size: 22px;  --text-read-heading-weight: 600;
+  --text-read-heading-ls:   -0.5px;
+  --text-mono-size:         12px;  --text-mono-lh:             1.50;
+
+  /* Space — 4px base, plus the 1px hairline step used for chart cell gaps */
+  --space-px:  1px;
+  --space-xxs: 2px;
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-section: 48px;
+
+  /* Radius — 8px ceiling, no exceptions */
+  --radius-xs:   3px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-full: 9999px;
+
+  /* Sizing */
+  --row-compact:       30px;
+  --row-comfortable:   36px;
+  --control-sm:        26px;
+  --control-md:        30px;
+  --control-lg:        34px;
+  --sidebar-w:         240px;
+  --sidebar-rail-w:    56px;
+  --context-pane-w:    360px;
+  --context-pane-min:  320px;
+  --context-pane-max:  520px;
+  --top-bar-h:         48px;
+  --bottom-tabs-h:     52px;
+  --icon:              16px;
+  --icon-sm:           14px;
+  --avatar:            22px;
+  --hairline-w:        1px;
+  --focus-ring-w:      2px;
+  --focus-ring-offset: 2px;
+  --read-measure:      680px;
+  --label-gutter:      110px;   /* row-label column in charts and the heat strip */
+
+  /* Motion */
+  --dur-instant:  90ms;
+  --dur-fast:     120ms;
+  --dur-base:     180ms;
+  --dur-slow:     220ms;
+  --dur-progress: 400ms;
+  --ease:         cubic-bezier(0.2, 0, 0, 1);
+  --ease-pane:    cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Density — overridden by [data-density="compact"] */
+  --row-h: var(--row-comfortable);
+}
+
+[data-density='compact'] {
+  --row-h: var(--row-compact);
+}
+
+/* Touch devices and small viewports: larger targets, comfortable locked */
+@media (max-width: 1023px) {
+  :root {
+    --row-h:      44px;
+    --control-sm: 36px;
+    --control-md: 40px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BASE
+   ════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-lh);
+  letter-spacing: var(--text-body-ls);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+/* Headings are Montserrat and never appear below 16px */
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-heading);
+  font-weight: var(--text-heading-weight);
+  letter-spacing: var(--text-heading-ls);
+}
+
+/* Monochrome selection */
+::selection {
+  background: var(--selection);
+  color: var(--ink);
+}
+
+/* The focus ring is ink. It is the highest-contrast object on screen and is
+   never removed. Removing the accent color makes focus MORE legible. */
+:focus-visible {
+  outline: var(--focus-ring-w) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Links: underline, never color */
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color var(--dur-fast) var(--ease);
+}
+a:hover { text-decoration-color: var(--ink); }
+
+/* Numbers never jitter as they update */
+.tabular,
+input[type='number'],
+[data-numeric] { font-variant-numeric: tabular-nums; }
+
+/* Scrollbars follow the neutral ladder */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border: 3px solid transparent;
+  border-radius: var(--radius-full);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   TYPE UTILITIES
+   The only place font shorthands are defined.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.t-display {
+  font-family: var(--font-heading); font-size: var(--text-display-size);
+  font-weight: var(--text-display-weight); line-height: var(--text-display-lh);
+  letter-spacing: var(--text-display-ls);
+}
+.t-title {
+  font-family: var(--font-heading); font-size: var(--text-title-size);
+  font-weight: var(--text-title-weight); line-height: var(--text-title-lh);
+  letter-spacing: var(--text-title-ls);
+}
+.t-heading {
+  font-family: var(--font-heading); font-size: var(--text-heading-size);
+  font-weight: var(--text-heading-weight); line-height: var(--text-heading-lh);
+  letter-spacing: var(--text-heading-ls);
+}
+.t-heading-sm {
+  font-family: var(--font-heading); font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight); line-height: var(--text-heading-sm-lh);
+  letter-spacing: var(--text-heading-sm-ls);
+}
+.t-subheading {
+  font-family: var(--font-body); font-size: var(--text-subheading-size);
+  font-weight: var(--text-subheading-weight); line-height: var(--text-subheading-lh);
+  letter-spacing: var(--text-subheading-ls);
+}
+.t-body {
+  font-family: var(--font-body); font-size: var(--text-body-size);
+  font-weight: var(--text-body-weight); line-height: var(--text-body-lh);
+  letter-spacing: var(--text-body-ls);
+}
+.t-body-sm {
+  font-family: var(--font-body); font-size: var(--text-body-sm-size);
+  font-weight: var(--text-body-sm-weight); line-height: var(--text-body-sm-lh);
+}
+.t-caption {
+  font-family: var(--font-body); font-size: var(--text-caption-size);
+  font-weight: var(--text-caption-weight); line-height: var(--text-caption-lh);
+}
+.t-micro {
+  font-family: var(--font-body); font-size: var(--text-micro-size);
+  font-weight: var(--text-micro-weight); line-height: var(--text-micro-lh);
+  letter-spacing: var(--text-micro-ls);
+}
+.t-button {
+  font-family: var(--font-body); font-size: var(--text-button-size);
+  font-weight: var(--text-button-weight); line-height: var(--text-button-lh);
+}
+.t-numeric {
+  font-family: var(--font-body); font-size: var(--text-numeric-size);
+  font-weight: var(--text-numeric-weight); font-variant-numeric: tabular-nums;
+}
+.t-numeric-lg {
+  font-family: var(--font-heading); font-size: var(--text-numeric-lg-size);
+  font-weight: var(--text-numeric-lg-weight); letter-spacing: var(--text-numeric-lg-ls);
+  font-variant-numeric: tabular-nums;
+}
+.t-read {
+  font-family: var(--font-body); font-size: var(--text-read-size);
+  font-weight: var(--text-read-weight); line-height: var(--text-read-lh);
+  max-width: var(--read-measure);
+}
+.t-read-heading {
+  font-family: var(--font-heading); font-size: var(--text-read-heading-size);
+  font-weight: var(--text-read-heading-weight); letter-spacing: var(--text-read-heading-ls);
+}
+.t-mono {
+  font-family: var(--font-mono); font-size: var(--text-mono-size);
+  line-height: var(--text-mono-lh);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   ENFORCEMENT
+   Add to CI. These four checks prevent the drift this file exists to stop.
+
+     1  grep -rE '#[0-9a-fA-F]{3,8}' src/ --include=*.tsx --include=*.ts
+        → any hex outside tokens.css fails
+
+     2  grep -rE '\[[0-9]+px\]|\[#' src/components src/app
+        → any arbitrary Tailwind value fails
+
+     3  grep -rE '\bdark:' src/components src/app
+        → any dark: variant fails; themes swap at the token layer
+
+     4  grep -rE 'rounded-(xl|2xl|3xl|full)' src/components src/app
+        → any radius above 8px fails (full is allowed on Avatar only)
+   ════════════════════════════════════════════════════════════════════════ */

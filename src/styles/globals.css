@@ -1,0 +1,377 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAILWIND THEME MAPPING
+   Maps only. Defines nothing. Every value is a var() from tokens.css.
+   The stock Tailwind palette is erased so `bg-blue-500` is a build error.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@theme inline {
+  /* Erase the default palette, spacing ramp and radii */
+  --color-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+  --shadow-*: initial;
+  --blur-*: initial;
+
+  /* Colour — semantic tokens only */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-inherit: inherit;
+
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-inset: var(--surface-inset);
+  --color-selection: var(--selection);
+  --color-scrim: var(--scrim);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-hairline-focus: var(--hairline-focus);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-disabled: var(--ink-disabled);
+
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-action-pressed: var(--action-pressed);
+  --color-on-action: var(--on-action);
+
+  /* Data — charts and trajectory indicators ONLY */
+  --color-track-on: var(--track-on);
+  --color-track-ahead: var(--track-ahead);
+  --color-track-behind: var(--track-behind);
+  --color-track-overdue: var(--track-overdue);
+  --color-track-none: var(--track-none);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+  --color-series-7: var(--series-7);
+  --color-series-8: var(--series-8);
+  --color-series-9: var(--series-9);
+  --color-series-10: var(--series-10);
+
+  /* Radius — 8px ceiling */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+
+  /* Type families */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* Space */
+  --spacing-px: var(--space-px);
+  --spacing-xxs: var(--space-xxs);
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+  --spacing-2xl: var(--space-2xl);
+  --spacing-section: var(--space-section);
+
+  /* Sizing */
+  --spacing-row: var(--row-h);
+  --spacing-row-compact: var(--row-compact);
+  --spacing-control-sm: var(--control-sm);
+  --spacing-control-md: var(--control-md);
+  --spacing-control-lg: var(--control-lg);
+  --spacing-sidebar: var(--sidebar-w);
+  --spacing-rail: var(--sidebar-rail-w);
+  --spacing-context: var(--context-pane-w);
+  --spacing-topbar: var(--top-bar-h);
+  --spacing-bottomtabs: var(--bottom-tabs-h);
+  --spacing-icon: var(--icon);
+  --spacing-icon-sm: var(--icon-sm);
+  --spacing-avatar: var(--avatar);
+  --spacing-measure: var(--read-measure);
+  --spacing-gutter: var(--label-gutter);
+
+  /* Shadows — overlays only */
+  --shadow-drag: var(--shadow-drag);
+  --shadow-popover: var(--shadow-popover);
+  --shadow-modal: var(--shadow-modal);
+
+  /* Breakpoints mirror src/lib/breakpoints.ts exactly */
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 768px;
+  --breakpoint-compact: 1024px;
+  --breakpoint-standard: 1200px;
+  --breakpoint-wide: 1440px;
+
+  /* Motion */
+  --ease-token: var(--ease);
+  --ease-pane: var(--ease-pane);
+}
+
+@custom-variant dark ([data-theme='dark'] &);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   APP-LEVEL BASE
+   Everything below is layout plumbing that has no home in tokens.css.
+   No new colours, radii, sizes or durations are introduced here.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+/* The shell never scrolls; panes do. */
+.shell-grid {
+  display: grid;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Hide-until-hover row actions, always exposed to assistive tech. */
+.row-actions {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.group\/row:hover .row-actions,
+.group\/row:focus-within .row-actions {
+  opacity: 1;
+}
+@media (max-width: 1023px) {
+  .row-actions {
+    opacity: 1;
+  }
+}
+
+/* Completion animation */
+@keyframes row-complete {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+.row-completing {
+  animation: row-complete var(--dur-progress) var(--ease) forwards;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.skeleton {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.4s var(--ease) infinite;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-overlay {
+  animation: overlay-in var(--dur-base) var(--ease);
+}
+.anim-modal {
+  animation: modal-in var(--dur-base) var(--ease);
+}
+.anim-menu {
+  animation: menu-in var(--dur-fast) var(--ease);
+}
+.anim-drawer {
+  animation: drawer-in var(--dur-slow) var(--ease-pane);
+}
+.anim-toast {
+  animation: toast-in var(--dur-base) var(--ease);
+}
+
+/* Off-screen board columns and timeline months stay cheap. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+/* Tiptap editor surface */
+.tiptap {
+  outline: none;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--ink-faint);
+}
+.tiptap h1 {
+  font-family: var(--font-heading);
+  font-size: var(--text-title-size);
+  font-weight: var(--text-title-weight);
+  letter-spacing: var(--text-title-ls);
+  margin: var(--space-xl) 0 var(--space-sm);
+}
+.tiptap h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-heading-size);
+  font-weight: var(--text-heading-weight);
+  letter-spacing: var(--text-heading-ls);
+  margin: var(--space-lg) 0 var(--space-sm);
+}
+.tiptap h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  margin: var(--space-lg) 0 var(--space-xs);
+}
+.tiptap p {
+  margin: 0 0 var(--space-md);
+}
+.tiptap ul,
+.tiptap ol {
+  margin: 0 0 var(--space-md);
+  padding-left: var(--space-xl);
+}
+.tiptap ul {
+  list-style: disc;
+}
+.tiptap ol {
+  list-style: decimal;
+}
+.tiptap blockquote {
+  border-left: var(--hairline-w) solid var(--hairline-strong);
+  padding-left: var(--space-lg);
+  color: var(--ink-muted);
+  margin: 0 0 var(--space-md);
+}
+.tiptap code {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-size);
+  background: var(--surface-2);
+  border-radius: var(--radius-xs);
+  padding: var(--space-xxs) var(--space-xs);
+}
+.tiptap pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-size);
+  background: var(--surface-inset);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  overflow-x: auto;
+  margin: 0 0 var(--space-md);
+}
+.tiptap pre code {
+  background: transparent;
+  padding: 0;
+}
+.tiptap ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.tiptap ul[data-type='taskList'] li {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+.tiptap ul[data-type='taskList'] li > label {
+  margin-top: var(--space-xs);
+}
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 var(--space-md);
+}
+.tiptap th,
+.tiptap td {
+  border: var(--hairline-w) solid var(--hairline);
+  padding: var(--space-xs) var(--space-sm);
+  text-align: left;
+}
+.tiptap .mention {
+  background: var(--surface-2);
+  border-radius: var(--radius-xs);
+  padding: var(--space-xxs) var(--space-xs);
+  color: var(--ink);
+}
+.tiptap hr {
+  border: none;
+  border-top: var(--hairline-w) solid var(--hairline);
+  margin: var(--space-xl) 0;
+}
+
+/* Print — annual review */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .shell-grid {
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+  body {
+    background: #fff;
+  }
+}
