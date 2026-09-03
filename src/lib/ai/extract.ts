@@ -1,14 +1,17 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { addDays, formatISO, nextDay, parseISO, startOfDay, type Day } from 'date-fns';
 import { db } from '@/lib/db/client';
-import { capture, edge, object, type Extraction, type ExtractionObject } from '@/lib/db/schema';
+import {
+  capture, edge, object, transaction, type Extraction, type ExtractionObject,
+} from '@/lib/db/schema';
+import { completeObjects } from '@/lib/objects/complete';
 import { askJson } from './client';
 import { EXTRACTION_SYSTEM } from './prompts';
 import { EXTRACTION_SCHEMA } from './schemas';
 import { promptContext } from './context';
 import { storeObjectEmbedding } from './embeddings';
 import { getUserForJob } from '@/lib/db/queries';
-import { duplicateCandidates } from './match';
+import { duplicateCandidates, matchDebrief } from './match';
 import { mentionsPrompt, resolveMentions } from './mentions';
 
 const EMPTY: Extraction = {
@@ -87,6 +90,39 @@ export async function extractCapture(captureId: string): Promise<Extraction> {
     } else {
       o.match = { object_id: null, candidates: candidates.filter((c) => c.score >= 0.6) };
     }
+  }
+
+  // Completion detection runs twice and takes the better answer. The scoring
+  // engine catches things the model misses, and works even with no key at all;
+  // the model catches phrasings that share no words with the item's title.
+  // "finished portfolio homepage" must tick the task off whichever field it was
+  // typed into, so capture gets the same treatment the debrief does.
+  try {
+    const scored = await matchDebrief(row.userId, text);
+    for (const m of scored) {
+      if (m.score < 0.5) continue;
+      const existing = result.completions.find((c) => c.object_id === m.id);
+      if (existing) {
+        existing.confidence = Math.max(existing.confidence, m.score);
+        existing.evidence ||= m.evidence;
+      } else {
+        result.completions.push({
+          object_id: m.id,
+          confidence: m.score,
+          evidence: m.evidence,
+        });
+      }
+    }
+  } catch (e) {
+    console.error('[extract] completion matching failed', e);
+  }
+
+  // A completion and a new object for the same thing is a duplicate; the
+  // completion wins, because the item already exists.
+  if (result.completions.length) {
+    result.objects = result.objects.filter(
+      (o) => !['task', 'milestone', 'habit', 'waiting_on'].includes(o.type),
+    );
   }
 
   // Enforce the mention links rather than trusting them: if the model created
@@ -203,7 +239,16 @@ export function resolveDate(input: string, from = new Date()): string | null {
 export interface ResolveInput {
   userId: string;
   captureId: string;
-  accept: string[]; // tmp ids the user kept
+  /** tmp ids of proposed objects the user kept */
+  accept: string[];
+  /** object ids the user confirmed as completed */
+  complete?: string[];
+  /** object ids to snooze rather than complete */
+  snooze?: string[];
+  /** indices of the proposed expenses the user kept */
+  expenses?: number[];
+  /** whether to save the raw text as a journal entry */
+  journal?: boolean;
   edits?: Record<string, Partial<ExtractionObject>>;
   noteOnly?: boolean;
 }
@@ -293,8 +338,74 @@ export async function resolveCapture(input: ResolveInput) {
     created.push({ tmp: 'note', id: note!.id, type: 'note', title: 'Note' });
   }
 
+  // Completing what the text said was finished is the whole point of typing it.
+  const completion = await completeObjects(
+    input.userId,
+    (input.complete ?? []).map((id) => ({ id })),
+  );
+
+  for (const id of input.snooze ?? []) {
+    await db
+      .update(object)
+      .set({ snoozeUntil: addDays(new Date(), 1) })
+      .where(and(eq(object.userId, input.userId), eq(object.id, id)));
+  }
+
+  const keptExpenses = (input.expenses ?? []).map((i) => extraction.expenses[i]).filter(Boolean);
+  for (const e of keptExpenses) {
+    const [expense] = await db
+      .insert(object)
+      .values({
+        userId: input.userId,
+        type: 'expense',
+        title: `${e.merchant} — $${e.amount}`,
+        area: 'finance',
+        props: { amount: e.amount, merchant: e.merchant, category: e.category },
+        sourceCaptureId: input.captureId,
+      })
+      .returning({ id: object.id });
+    await db.insert(transaction).values({
+      userId: input.userId,
+      postedAt: new Date().toISOString().slice(0, 10),
+      amount: (-Math.abs(e.amount)).toString(),
+      merchant: e.merchant,
+      description: e.merchant,
+      category: e.category,
+      categorySource: 'ai',
+      objectId: expense!.id,
+    });
+    created.push({ tmp: `expense-${e.merchant}`, id: expense!.id, type: 'expense', title: e.merchant });
+  }
+
+  if (input.journal && extraction.journal?.body?.trim()) {
+    const [j] = await db
+      .insert(object)
+      .values({
+        userId: input.userId,
+        type: 'journal',
+        title: extraction.journal.body.split('\n')[0]!.slice(0, 80),
+        body: extraction.journal.body,
+        props: { mood: extraction.journal.mood, themes: extraction.journal.themes },
+        sourceCaptureId: input.captureId,
+      })
+      .returning({ id: object.id });
+    created.push({ tmp: 'journal', id: j!.id, type: 'journal', title: 'Journal entry' });
+    void storeObjectEmbedding(j!.id, extraction.journal.body);
+  }
+
   await db.update(capture).set({ resolvedAt: new Date() }).where(eq(capture.id, input.captureId));
-  return { created, tmpToId: Object.fromEntries(tmpToId) };
+
+  const summary: string[] = [];
+  if (created.length) summary.push(`${created.length} added`);
+  summary.push(...completion.summary);
+
+  return {
+    created,
+    completed: completion.completed,
+    deltas: completion.deltas,
+    summary,
+    tmpToId: Object.fromEntries(tmpToId),
+  };
 }
 
 export function isUuid(s: string) {

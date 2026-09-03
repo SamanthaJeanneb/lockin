@@ -70,6 +70,12 @@ guide** — where each key comes from, what it turns on, and what breaks without
 fragment searches; a verb surfaces commands. You never have to know which one
 you wanted.
 
+**Capture closes the loop, not just opens it.** "finished portfolio homepage"
+ticks the task off, advances the milestone above it and moves the goal —
+capture and debrief run the same matcher, so it does not matter which field you
+typed it into. `@` opens a typeahead over the people, projects and goals you
+already have.
+
 **A hybrid graph.** Everything is an `object` with a type, and everything is
 connected by a typed `edge`. Adding a new kind of thing is a row in
 `object_type`, not a new component — `ObjectRow` and `ObjectDetail` render a

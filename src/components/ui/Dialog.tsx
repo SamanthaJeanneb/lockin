@@ -61,9 +61,7 @@ export function Dialog({
                 <RD.Description className="t-caption mt-xxs text-ink-subtle">
                   {description}
                 </RD.Description>
-              ) : (
-                <RD.Description className="sr-only">{title}</RD.Description>
-              )}
+              ) : null}
             </div>
             <RD.Close asChild>
               <IconButton label="Close">

@@ -7,7 +7,7 @@ import type { Extraction } from '@/lib/db/schema';
 import { Dialog, IconButton, useToast } from '@/components/ui';
 import { MentionTextarea, type MentionTextareaHandle } from './MentionTextarea';
 import { VoiceRecorder } from './VoiceRecorder';
-import { ExtractionReview } from './ExtractionReview';
+import { ExtractionReview, type ReferencedObject } from './ExtractionReview';
 
 /**
  * Save is instant — raw text hits the database immediately and the request
@@ -23,6 +23,7 @@ export function CaptureModal() {
 
   const [captureId, setCaptureId] = useState<string | null>(null);
   const [extraction, setExtraction] = useState<Extraction | null>(null);
+  const [referenced, setReferenced] = useState<ReferencedObject[]>([]);
   const [polling, setPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -37,6 +38,7 @@ export function CaptureModal() {
       setPolling(false);
       setError(null);
       setElapsed(0);
+      setReferenced([]);
     }
   }, [open]);
 
@@ -72,12 +74,14 @@ export function CaptureModal() {
         const res = await api.get<{
           processedAt: string | null;
           extraction: Extraction | null;
+          referenced: ReferencedObject[];
           error: string | null;
         }>(`/api/capture/${captureId}`);
         if (cancelled) return;
 
         if (res.processedAt || res.error) {
           setExtraction(res.extraction);
+          setReferenced(res.referenced ?? []);
           setError(res.error);
           setPolling(false);
           return;
@@ -106,12 +110,16 @@ export function CaptureModal() {
   // Dismissing means accepting.
   const handleOpenChange = (next: boolean) => {
     if (next) return;
-    if (captureId && extraction?.objects.length) {
+    const hasSomething =
+      (extraction?.objects.length ?? 0) > 0 || (extraction?.completions.length ?? 0) > 0;
+    if (captureId && hasSomething) {
       void api
-        .post(`/api/capture/${captureId}/resolve`, {
-          accept: extraction.objects.filter((o) => o.confidence >= 0.5).map((o) => o.tmp),
+        .post<{ summary: string[] }>(`/api/capture/${captureId}/resolve`, {
+          accept: extraction!.objects.filter((o) => o.confidence >= 0.5).map((o) => o.tmp),
+          complete: extraction!.completions.filter((c) => c.confidence >= 0.85).map((c) => c.object_id),
+          expenses: extraction!.expenses.map((_, i) => i),
         })
-        .then(() => toast.show('Added from your capture.'));
+        .then((r) => toast.show(r.summary.join(' · ') || 'Added from your capture.'));
     }
     close();
   };
@@ -128,6 +136,7 @@ export function CaptureModal() {
         <ExtractionReview
           captureId={captureId}
           extraction={extraction}
+          referenced={referenced}
           loading={polling}
           elapsed={elapsed}
           error={error}

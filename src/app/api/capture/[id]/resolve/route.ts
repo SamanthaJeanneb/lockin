@@ -6,6 +6,10 @@ import { rollupProgress } from '@/lib/db/rollup';
 
 const Body = z.object({
   accept: z.array(z.string()).default([]),
+  complete: z.array(z.string().uuid()).default([]),
+  snooze: z.array(z.string().uuid()).default([]),
+  expenses: z.array(z.number().int()).default([]),
+  journal: z.boolean().default(false),
   reject: z.array(z.string()).default([]),
   edits: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
   noteOnly: z.boolean().default(false),
@@ -21,6 +25,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       userId: user.id,
       captureId: id,
       accept: body.accept,
+      complete: body.complete,
+      snooze: body.snooze,
+      expenses: body.expenses,
+      journal: body.journal,
       edits: body.edits as never,
       noteOnly: body.noteOnly,
     });
