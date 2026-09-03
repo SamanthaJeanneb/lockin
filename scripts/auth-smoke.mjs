@@ -20,6 +20,19 @@ function check(name, ok, extra = '') {
   if (!ok) failures++;
 }
 
+
+/** Fills a controlled input and makes sure the value survived — typing before
+ *  React hydrates leaves the DOM filled and the component state empty, and the
+ *  next render wipes it. Only a problem for a robot; people are slower. */
+async function type(page, selector, value) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await page.fill(selector, value);
+    await page.waitForTimeout(250);
+    if ((await page.inputValue(selector)) === value) return;
+  }
+  throw new Error(`could not fill ${selector} — the form never hydrated`);
+}
+
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
@@ -35,9 +48,9 @@ try {
 
   // 3. Sign up.
   await page.goto(`${BASE}/signup`, { waitUntil: 'domcontentloaded' });
-  await page.fill('input[autocomplete="name"]', 'Smoke Tester');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  await type(page, 'input[autocomplete="name"]', 'Smoke Tester');
+  await type(page, 'input[type="email"]', email);
+  await type(page, 'input[type="password"]', password);
   await Promise.all([
     page.waitForURL((u) => !u.pathname.startsWith('/signup'), { timeout: 60000 }),
     page.click('button[type="submit"]'),
@@ -85,8 +98,8 @@ try {
 
   // 10. Sign back in with the same credentials.
   await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' });
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  await type(page, 'input[type="email"]', email);
+  await type(page, 'input[type="password"]', password);
   await Promise.all([
     page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 60000 }),
     page.click('button[type="submit"]'),
@@ -96,8 +109,8 @@ try {
   // 11. Wrong password is refused, in plain language.
   await ctx.clearCookies();
   await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' });
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', 'definitely-wrong-password');
+  await type(page, 'input[type="email"]', email);
+  await type(page, 'input[type="password"]', 'definitely-wrong-password');
   await page.click('button[type="submit"]');
   await page.waitForFunction(() => /do not match/i.test(document.body.innerText), null, { timeout: 30000 })
     .catch(() => {});

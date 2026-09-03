@@ -41,6 +41,12 @@ export function AuthForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (busy) return;
+    // Empty fields reach Supabase as an anonymous sign-in, which fails with a
+    // message about a feature this form does not offer. Answer it here instead.
+    if (!email.trim() || !password) {
+      setError('Enter your email and password.');
+      return;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);

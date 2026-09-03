@@ -407,7 +407,28 @@ the app works either way.
 
 ### Option A — Vercel Cron (simplest)
 
-`vercel.json` already declares the schedule. Set one secret:
+`vercel.json` declares the two daily jobs a Hobby account is allowed to run —
+`rollover` and `generate-recurrences`. Both are idempotent, so running them
+alongside Inngest is harmless.
+
+The rest of the schedule needs a Vercel Pro plan, which lifts the two-job and
+once-a-day limits. On Pro, add these back to `crons`:
+
+```json
+{ "path": "/api/cron/detect-patterns",        "schedule": "0 2 * * *" },
+{ "path": "/api/cron/rollup-progress",        "schedule": "0 3 * * *" },
+{ "path": "/api/cron/learn-cadence",          "schedule": "0 4 * * *" },
+{ "path": "/api/cron/detect-interests",       "schedule": "20 4 * * *" },
+{ "path": "/api/cron/sync-plaid",             "schedule": "0 6,14,22 * * *" },
+{ "path": "/api/cron/sync-calendar",          "schedule": "*/30 * * * *" },
+{ "path": "/api/cron/schedule-notifications", "schedule": "0 * * * *" },
+{ "path": "/api/cron/send-notifications",     "schedule": "*/15 * * * *" },
+{ "path": "/api/cron/weekly-review",          "schedule": "0 18 * * 0" },
+{ "path": "/api/cron/monthly-review",         "schedule": "0 18 28 * *" }
+```
+
+Option B carries the same schedule with no plan limit, which is why it is the
+one this deployment uses. Set one secret either way:
 
 ```bash
 CRON_SECRET=$(openssl rand -base64 32)

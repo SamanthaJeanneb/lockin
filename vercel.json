@@ -3,16 +3,6 @@
   "framework": "nextjs",
   "crons": [
     { "path": "/api/cron/rollover", "schedule": "5 0 * * *" },
-    { "path": "/api/cron/generate-recurrences", "schedule": "30 0 * * *" },
-    { "path": "/api/cron/detect-patterns", "schedule": "0 2 * * *" },
-    { "path": "/api/cron/rollup-progress", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/learn-cadence", "schedule": "0 4 * * *" },
-    { "path": "/api/cron/detect-interests", "schedule": "20 4 * * *" },
-    { "path": "/api/cron/sync-plaid", "schedule": "0 6,14,22 * * *" },
-    { "path": "/api/cron/sync-calendar", "schedule": "*/30 * * * *" },
-    { "path": "/api/cron/schedule-notifications", "schedule": "0 * * * *" },
-    { "path": "/api/cron/send-notifications", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/weekly-review", "schedule": "0 18 * * 0" },
-    { "path": "/api/cron/monthly-review", "schedule": "0 18 28 * *" }
+    { "path": "/api/cron/generate-recurrences", "schedule": "30 0 * * *" }
   ]
 }
