@@ -11,6 +11,70 @@ down to 375px without losing a single capability.
 
 ---
 
+## Run it locally
+
+### What you need
+
+| | |
+|---|---|
+| **Node 20+** | `node -v`. Developed on 24. |
+| **Docker** | Runs the local Postgres. Docker Desktop has to be *running*, not just installed. |
+| **API keys** | None. Not one. |
+
+### Five commands
+
+```bash
+git clone https://github.com/SamanthaJeanneb/lockin.git
+cd lockin
+npm install
+cp .env.example .env.local
+npm run db:up && npm run db:migrate && npm run db:seed
+npm run dev
+```
+
+Open <http://localhost:3000>.
+
+You are already signed in. `.env.example` ships with `LOCKIN_DEV_USER` set,
+which stands in for an auth provider so the whole app is usable before you have
+configured one, and with a `DATABASE_URL` pointing at the container `db:up`
+just started. Both are local-only: `LOCKIN_DEV_USER` is ignored whenever
+`NODE_ENV` is production, so it cannot follow you to a deployment.
+
+### What you get with no keys
+
+A complete app, seeded with realistic data. Capture stores raw text, the
+debrief matches on keywords and completion verbs, and Today ranks on deadlines,
+dependencies and status. Every screen works.
+
+What is dark: extraction into structured objects, semantic search, voice,
+bank sync, calendar, notifications. Each lights up when its key appears —
+nothing is all-or-nothing, and nothing crashes for the want of a key.
+
+**[SETUP.md](./SETUP.md) is the click-by-click guide** to every one of them:
+where the key comes from, what it turns on, and what stays dark without it.
+
+### Turning on real sign-in
+
+Fill in the three `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` /
+`SUPABASE_SERVICE_ROLE_KEY` values, point `DATABASE_URL` at your Supabase
+pooler string, then **delete the `LOCKIN_DEV_USER` line** — while it is set the
+bypass wins and you will never see the sign-in screen. Restart `npm run dev`:
+`NEXT_PUBLIC_*` variables are read at build time, so a running server will not
+pick them up.
+
+### When it will not start
+
+| Symptom | Cause |
+|---|---|
+| A "Setup required" screen listing `DATABASE_URL` | `.env.local` missing, or you edited it while the server was running. Restart. |
+| `db:up` fails | Docker Desktop is not running. |
+| `db:migrate` cannot connect | Postgres needs a few seconds after `db:up`. Run it again. |
+| Port 54322 already in use | Another Postgres. `npm run db:down`, or change the port in both `db:up` and `DATABASE_URL`. |
+| `npm test` dies on "Must use outdir" | The project path contains a `*`. Vitest cannot load a config through one — move the folder somewhere without it. |
+| Sign-in hangs with no error | The Supabase keys are missing from the *build*. Restart the dev server. |
+
+---
+
 ## The daily loop
 
 **7:30am.** Open the tab. `G H`. Read Today and the day's periphery in one
@@ -26,26 +90,6 @@ as you type. Glance at the matches, uncheck nothing, `⌘↵`. *4 of 5 done · C
 Everything else — the goal tree, the twelve-month roadmap, the drift analysis,
 the money dashboard — is there when you want to sit down and think, and out of
 the way when you don't.
-
----
-
-## Getting it running
-
-Two commands, if you have Docker:
-
-```bash
-npm install
-npm run db:up && npm run db:migrate && npm run db:seed
-npm run dev
-```
-
-That gives you a fully working app at <http://localhost:3000> with realistic
-demo data and **no API keys at all**. Capture stores raw text, the debrief
-matches on keywords and completion verbs, and Today ranks on deadlines,
-dependencies and status.
-
-Add keys to light up the rest. **[SETUP.md](./SETUP.md) is the click-by-click
-guide** — where each key comes from, what it turns on, and what breaks without it.
 
 ---
 
@@ -238,7 +282,12 @@ visible in Settings rather than crashing a screen.
 ## Deployment
 
 Vercel for the app, Supabase for Postgres and auth, Inngest or Vercel Cron for
-jobs. `vercel.json` carries the cron schedule. See
+jobs. `vercel.json` carries the cron schedule.
+
+The Vercel project is connected to this repository, so **a push to `main`
+deploys**. After changing an Inngest function definition, re-sync it —
+`curl -X PUT https://your-domain.com/api/inngest` — and read the reply; a
+refused sync registers nothing and background work then fails silently. See
 [SETUP.md](./SETUP.md) § Deploying.
 
 ---
