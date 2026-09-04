@@ -151,7 +151,7 @@ export function CaptureModal() {
             ref={inputRef}
             rows={4}
             value={draft}
-            placeholder="Met @Alex at lunch, he's at OpenAI and interested in robotics. Follow up Tuesday."
+            placeholder="Send @Jordan the meeting notes before Friday."
             onChange={setDraft}
             onSubmit={() => void submit()}
             className="min-h-[120px] border-0 p-0 focus:border-0"

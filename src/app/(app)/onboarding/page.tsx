@@ -76,7 +76,7 @@ export default function OnboardingPage() {
             autoFocus
             rows={2}
             value={identity}
-            placeholder="Build ambitious things, stay free, stay connected."
+            placeholder="Do work I'm proud of and stay healthy doing it."
             onChange={(e) => setIdentity(e.target.value)}
           />
           <Divider clearance="sm" />
@@ -117,7 +117,11 @@ export default function OnboardingPage() {
                 autoFocus={i === 0}
                 value={g.title}
                 placeholder={
-                  i === 0 ? 'Get a design engineering role' : i === 1 ? '$1M invested by 35' : 'Run a marathon'
+                  i === 0
+                    ? 'Move into a new role'
+                    : i === 1
+                      ? 'Save three months of expenses'
+                      : 'Get back in shape'
                 }
                 onChange={(e) =>
                   setGoals((s) => s.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))
@@ -152,7 +156,7 @@ export default function OnboardingPage() {
             autoFocus
             rows={4}
             value={capture}
-            placeholder="Met Alex at lunch, he's at OpenAI and interested in robotics. Follow up Tuesday."
+            placeholder="Book a dentist appointment for next Tuesday."
             onChange={(e) => setCapture(e.target.value)}
           />
         </div>

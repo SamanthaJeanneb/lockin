@@ -88,7 +88,7 @@ export default function SettingsPage() {
             multiline
             label="Identity statement"
             value={data.user.identityStatement ?? ''}
-            placeholder="Build ambitious things, stay free, stay connected."
+            placeholder="Do work I'm proud of and stay healthy doing it."
             onSave={(v) => save.mutate({ identityStatement: v })}
           />
         </FieldRow>

@@ -130,7 +130,7 @@ function Overview({ data }: { data: Dashboard }) {
             ))}
           </div>
         ) : (
-          <EmptyState message="No financial goals yet. Capture “$1M invested by 35” to create one." />
+          <EmptyState message="No financial goals yet. Capture “Save three months of expenses” to create one." />
         )}
       </section>
     </div>
@@ -306,7 +306,7 @@ function WhatIf() {
       >
         <Input
           value={question}
-          placeholder="What if I take three months off to build the product?"
+          placeholder="What if I took three months off work?"
           onChange={(e) => setQuestion(e.target.value)}
         />
         <Button type="submit" variant="primary" disabled={run.isPending || !question.trim()}>

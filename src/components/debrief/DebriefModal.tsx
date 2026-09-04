@@ -162,7 +162,7 @@ export function DebriefModal() {
               autoFocus
               rows={8}
               value={text}
-              placeholder="Finished the homepage and pushed it live. Ran 4 miles. Had lunch with @Alex…"
+              placeholder="Finished the report and sent it. Went for a run. Caught up with @Jordan…"
               onChange={setText}
               className="min-h-[160px] border-0 p-0 focus:border-0"
             />

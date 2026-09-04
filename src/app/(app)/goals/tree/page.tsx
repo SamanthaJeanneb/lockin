@@ -97,7 +97,7 @@ export default function GoalTreePage() {
             <Input
               autoFocus
               value={draft}
-              placeholder="I want $1M invested by 35"
+              placeholder="I want three months of expenses saved"
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === 'Escape' && setAdding(null)}
             />
