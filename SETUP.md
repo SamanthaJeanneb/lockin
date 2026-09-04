@@ -451,7 +451,34 @@ INNGEST_SIGNING_KEY=signkey-prod-...
 ```
 
 3. Register the endpoint: **Apps → Sync new app**, pointing at
-   `https://your-domain.com/api/inngest`.
+   `https://your-domain.com/api/inngest`. A `PUT` to that URL does the same
+   thing from a terminal, and tells you why if it refuses:
+
+```bash
+curl -X PUT https://your-domain.com/api/inngest
+# {"message":"Successfully registered","modified":true}
+```
+
+   **Re-sync whenever a function definition changes** — a new function, a
+   changed id, a different cron — and always point the sync at the stable
+   production alias rather than a one-off deployment URL, so it survives the
+   next deploy.
+
+   Check the response. A sync can fail entirely on one function's
+   configuration:
+
+```
+{"message":"The function 'extract-capture' has higher concurrency limits (10)
+ than your plan limit of 5","modified":false}
+```
+
+   That is an all-or-nothing refusal — *no* function registers. The failure is
+   silent from the app's side, and the shape it takes is worth recognising:
+   `dispatch()` still sends events, Inngest still accepts them, and they queue
+   with nothing on the other end to run them. Because the send succeeded, the
+   inline fallback never fires. Captures save but never extract, and every
+   scheduled job quietly stops. If background work has stopped for no visible
+   reason, `PUT` the endpoint and read what comes back.
 
 Locally:
 
