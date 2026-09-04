@@ -8,6 +8,13 @@ import { extractCaptureJob } from '@/jobs';
 import { CAPTURE_CHANNELS } from '@/lib/constants';
 
 export const runtime = 'nodejs';
+/**
+ * The response returns in milliseconds, but when Inngest is not carrying the
+ * work `dispatch` finishes extraction in `after()` — which runs on this
+ * function's clock. Without the budget the model call is cut off at 10s and the
+ * capture stays unprocessed with nothing to show for it.
+ */
+export const maxDuration = 60;
 
 const Body = z.object({
   channel: z.enum(CAPTURE_CHANNELS).default('app'),
