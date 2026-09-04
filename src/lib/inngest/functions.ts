@@ -6,7 +6,10 @@ import {
 } from '@/jobs';
 
 export const extractCapture = inngest.createFunction(
-  { id: 'extract-capture', retries: 3, concurrency: { limit: 10 } },
+  // 5 is the Inngest free-plan ceiling. Asking for more is not a soft cap: the
+  // whole app is refused at sync, no function registers, and every event queues
+  // in the cloud with nothing on the other end to run it.
+  { id: 'extract-capture', retries: 3, concurrency: { limit: 5 } },
   { event: 'capture/created' },
   async ({ event, step }) => step.run('extract', () => extractCaptureJob({ captureId: event.data.captureId })),
 );
