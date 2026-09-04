@@ -21,3 +21,6 @@ tsconfig.tsbuildinfo
 # The supplied source PDF is 5.6MB of screenshots; keep it local.
 /docs/source/*.pdf
 .env*
+
+# Backups of env files — these fill up with real keys.
+*.bak
