@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/client-api';
-import { DEFAULT_AREAS, HORIZONS, HORIZON_LABEL } from '@/lib/constants';
+import { DEFAULT_AREAS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { Button, Divider, Input, Meta, Select, Textarea, useToast } from '@/components/ui';
+import { Button, Divider, Meta, Textarea, useToast } from '@/components/ui';
+import { GoalWorkspace, type DraftGoal } from '@/components/onboarding/GoalWorkspace';
 import { SignOutButton } from '@/components/shell/SignOutButton';
 
-const STEPS = ['Who you are', 'Three goals', 'First capture', 'Connect something'] as const;
+const STEPS = ['Who you are', 'What you want', 'First capture', 'Connect something'] as const;
 
 /** Four screens. Every one skippable — the product has no required fields
  *  anywhere else either. */
@@ -19,11 +20,10 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [identity, setIdentity] = useState('');
   const [priority, setPriority] = useState<string[]>([...DEFAULT_AREAS].slice(0, 5));
-  const [goals, setGoals] = useState([
-    { title: '', area: 'career', horizon: '1y' },
-    { title: '', area: 'finance', horizon: '1y' },
-    { title: '', area: 'health', horizon: '3m' },
-  ]);
+  // What they wrote, per horizon, and what the model made of it. Both are kept:
+  // going back to the writing must not lose the writing.
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [goals, setGoals] = useState<DraftGoal[] | null>(null);
   const [capture, setCapture] = useState('');
 
   const finish = useMutation({
@@ -33,10 +33,22 @@ export default function OnboardingPage() {
         areaPriority: priority,
         onboarded: true,
       });
-      for (const g of goals.filter((g) => g.title.trim())) {
+      // Someone can fill the boxes and press Next without pressing Sort. Their
+      // text is not thrown away for it — sort it here and create what comes back.
+      let confirmed = goals;
+      if (!confirmed) {
+        const entries = Object.entries(drafts)
+          .filter(([, text]) => text.trim())
+          .map(([horizon, text]) => ({ horizon, text }));
+        confirmed = entries.length
+          ? (await api.post<{ goals: DraftGoal[] }>('/api/goals/sort', { entries })).goals
+          : [];
+      }
+
+      for (const g of confirmed.filter((g) => g.title.trim())) {
         await api.post('/api/objects', {
           type: 'goal',
-          title: g.title,
+          title: g.title.trim(),
           area: g.area,
           horizon: g.horizon,
           status: 'active',
@@ -109,41 +121,13 @@ export default function OnboardingPage() {
       ) : null}
 
       {step === 1 ? (
-        <div className="mt-lg flex flex-col gap-md">
-          <Meta>Three is enough to start. A goal is a sentence — everything else is inferred.</Meta>
-          {goals.map((g, i) => (
-            <div key={i} className="flex gap-sm">
-              <Input
-                autoFocus={i === 0}
-                value={g.title}
-                placeholder={
-                  i === 0
-                    ? 'Move into a new role'
-                    : i === 1
-                      ? 'Save three months of expenses'
-                      : 'Get back in shape'
-                }
-                onChange={(e) =>
-                  setGoals((s) => s.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))
-                }
-              />
-              <Select
-                ariaLabel="Area"
-                value={g.area}
-                onChange={(v) => setGoals((s) => s.map((x, j) => (j === i ? { ...x, area: v } : x)))}
-                options={DEFAULT_AREAS.map((a) => ({ value: a, label: a }))}
-                className="w-[130px]"
-              />
-              <Select
-                ariaLabel="Horizon"
-                value={g.horizon}
-                onChange={(v) => setGoals((s) => s.map((x, j) => (j === i ? { ...x, horizon: v } : x)))}
-                options={HORIZONS.map((h) => ({ value: h, label: HORIZON_LABEL[h] }))}
-                className="w-[130px]"
-              />
-            </div>
-          ))}
-        </div>
+        <GoalWorkspace
+          drafts={drafts}
+          setDrafts={setDrafts}
+          goals={goals}
+          setGoals={setGoals}
+          areas={[...DEFAULT_AREAS]}
+        />
       ) : null}
 
       {step === 2 ? (

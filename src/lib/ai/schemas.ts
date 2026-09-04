@@ -245,3 +245,24 @@ export const BREAKDOWN_SCHEMA = {
     },
   },
 } as const;
+
+export const GOAL_SORT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['goals'],
+  properties: {
+    goals: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['title', 'area', 'metric'],
+        properties: {
+          title: { type: 'string' },
+          area: { type: 'string' },
+          metric: nullableString,
+        },
+      },
+    },
+  },
+} as const;

@@ -35,13 +35,17 @@ export function CategoryChip({
   series,
   children,
   className,
+  onClick,
+  title,
 }: {
   series: number;
   children: React.ReactNode;
   className?: string;
+  onClick?: () => void;
+  title?: string;
 }) {
   return (
-    <Chip className={className}>
+    <Chip className={className} onClick={onClick} title={title}>
       <span
         aria-hidden
         className="size-[6px] shrink-0 rounded-full"

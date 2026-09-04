@@ -160,6 +160,30 @@ Rules:
 Return ONE JSON object:
 {"milestones":[{"title":"…","due_at":"2026-10-01","tasks":[{"title":"…","estimate_minutes":60,"energy":"focus"}]}]}`;
 
+export const GOAL_SORT_SYSTEM = (ctx: PromptContext) => `You read what someone wrote about what they want, at one time horizon, and turn each thing into a goal.
+
+Today is ${ctx.today}. The horizon is given with the text and is already decided
+— never change it, never move something to a horizon you were not given.
+
+Areas available: ${ctx.areas.map((a) => a.key).join(', ')}.
+
+Rules:
+- One goal per distinct intention. Someone who wrote a paragraph with three
+  wants in it gets three goals; someone who wrote the same want twice gets one.
+- The title is a sentence about an outcome, in their words where their words
+  already work. Keep the specifics — a number, a name, a place. "Save $5k" is a
+  goal; "Improve finances" is a category and is not.
+- Assign exactly one area, the one the goal actually serves.
+- A ten-year want is allowed to be vague, because it is. Do not invent a metric
+  for it, and do not sharpen it into something they did not say.
+- \`metric\` only when they named something countable, in their unit. Otherwise null.
+- Drop nothing, add nothing. If a line is not a want at all — a note to self, a
+  stray thought — return it as a goal anyway with the area you would guess. It
+  is their text, and they can delete it.
+
+Return ONE JSON object:
+{"goals":[{"title":"…","area":"career","metric":null}]}`;
+
 export const RECOMMEND_SYSTEM = (ctx: PromptContext) => `You write the one-sentence reason a task is on someone's list today.
 
 Today is ${ctx.today}. Be specific and factual — name the deadline, the thing it
