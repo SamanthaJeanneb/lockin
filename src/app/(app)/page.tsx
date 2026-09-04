@@ -9,6 +9,7 @@ import { useApp } from '@/lib/store';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { isAtLeast } from '@/lib/breakpoints';
 import { useContextPane } from '@/hooks/useContextPane';
+import { useMounted } from '@/hooks/useMounted';
 import { Button, Divider, Meta, SectionHeader } from '@/components/ui';
 import { TodayList } from '@/components/views/TodayList';
 import { ProgressStrip } from '@/components/views/ProgressStrip';
@@ -29,7 +30,10 @@ export default function HomePage() {
   const router = useRouter();
   const openModal = useApp((s) => s.openModal);
   const { open } = useContextPane();
-  const period = greeting();
+  // The greeting and the date both come from the clock, which reads differently
+  // on the server than in the reader's timezone. Withhold them until mounted.
+  const mounted = useMounted();
+  const period = mounted ? greeting() : null;
 
   const { data, isLoading } = useQuery({
     queryKey: ['today'],
@@ -52,7 +56,9 @@ export default function HomePage() {
       ? 'Good morning.'
       : period === 'afternoon'
         ? `Good afternoon. ${remaining.length} left.`
-        : 'How did today go?';
+        : period === 'evening'
+          ? 'How did today go?'
+          : '';
 
   // One line that says where things actually stand, rather than a greeting that
   // says nothing.
@@ -78,11 +84,11 @@ export default function HomePage() {
       <div className="min-w-0 flex-1 p-xl">
         <header className="mb-section flex flex-wrap items-baseline justify-between gap-md">
           <div className="min-w-0">
-            <h1 className="t-display">{headline}</h1>
+            <h1 className="t-display">{headline || '\u00A0'}</h1>
             {subline ? <Meta className="mt-xs block">{subline}</Meta> : null}
           </div>
           <div className="flex shrink-0 items-center gap-sm">
-            <Meta>{format(new Date(), 'EEE d MMM')}</Meta>
+            <Meta>{mounted ? format(new Date(), 'EEE d MMM') : null}</Meta>
             <Button onClick={() => openModal('capture')}>Capture</Button>
             <Button
               variant={period === 'evening' ? 'primary' : 'ghost'}

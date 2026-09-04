@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { useMounted } from '@/hooks/useMounted';
 import { PanelLeft, RefreshCw, Settings, Sparkle } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { IconButton, Kbd } from '@/components/ui';
@@ -10,6 +11,7 @@ export function TopBar({ syncing, compact }: { syncing?: boolean; compact?: bool
   const openModal = useApp((s) => s.openModal);
   const ui = useApp((s) => s.ui);
   const setUi = useApp((s) => s.setUi);
+  const mounted = useMounted();
 
   return (
     <header className="flex h-topbar shrink-0 items-center gap-md border-b border-hairline bg-canvas px-md">
@@ -39,7 +41,7 @@ export function TopBar({ syncing, compact }: { syncing?: boolean; compact?: bool
       </button>
 
       <span className="t-caption hidden shrink-0 text-ink-subtle tablet:block">
-        {format(new Date(), 'EEE d MMM')}
+        {mounted ? format(new Date(), 'EEE d MMM') : null}
       </span>
 
       <span
